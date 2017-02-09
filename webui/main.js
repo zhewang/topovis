@@ -8,7 +8,7 @@ $(document).ready(function(){
 
         var selected = [];
         for (var i = 0; i < original_data.length; i ++) {
-            if (catSelection[original_data[i].c] == true)
+            if (catSelection[original_data[i].c-1] == true)
                 selected.push(original_data[i]);
         }
 
