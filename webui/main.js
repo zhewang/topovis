@@ -6,21 +6,26 @@ $(document).ready(function(){
     // calculation button
     $('#btn_cal').on('click', function () {
 
+        d3.select('#persistenceplot').select('*').remove();
+
         var selected = [];
         for (var i = 0; i < original_data.length; i ++) {
             if (catSelection[original_data[i].c-1] == true)
                 selected.push(original_data[i]);
         }
 
-        $.ajax({
-            url: 'http://localhost:8800/query',
-            method: 'POST',
-            dataType: 'json',
-            data: JSON.stringify(selected),
-            success: function(json) {
-                plotPersistence(json);
-            }
-        });
+        if (selected.length > 0) {
+
+            $.ajax({
+                url: 'http://localhost:8800/query',
+                method: 'POST',
+                dataType: 'json',
+                data: JSON.stringify(selected),
+                success: function(json) {
+                    plotPersistence(json);
+                }
+            });
+        }
 
     });
 
@@ -47,8 +52,8 @@ function plotScatter(data) {
 
     // plot
     var margin = {top: 20, right: 20, bottom: 20, left: 20}
-        , width = 600 - margin.left - margin.right
-        , height = 600 - margin.top - margin.bottom;
+        , width = 500 - margin.left - margin.right
+        , height = 500 - margin.top - margin.bottom;
 
     var xMax = d3.max(data, function(d) { return d.px; });
     var yMax = d3.max(data, function(d) { return d.py; });
@@ -139,15 +144,13 @@ function plotPersistence(json) {
     }
 
     // plot as scatter plot
-    d3.select('#persistenceplot').select('*').remove();
-
     if(data.length == 0) {
         return;
     }
 
     var margin = {top: 20, right: 20, bottom: 20, left: 30}
-        , width = 300 - margin.left - margin.right
-        , height = 300 - margin.top - margin.bottom;
+        , width = 240 - margin.left - margin.right
+        , height = 240 - margin.top - margin.bottom;
 
     var xMax = d3.max(data, function(d) { return d.px; });
     var yMax = d3.max(data, function(d) { return d.py; });

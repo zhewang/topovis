@@ -43,10 +43,10 @@ json persistence_homology(json data)
 
 	int max_d = 2;
 
-    Filtration* full_filtration = new RipsFiltration(points, max_d);
-    PersistentHomology sparse_rips_homology(full_filtration);
-    //Filtration* sparse_filtration = new SparseRipsFiltration(points, max_d, 1.0/3);
-    //PersistentHomology sparse_rips_homology(sparse_filtration);
+    //Filtration* full_filtration = new RipsFiltration(points, max_d);
+    //PersistentHomology sparse_rips_homology(full_filtration);
+    Filtration* sparse_filtration = new SparseRipsFiltration(points, max_d, 1.0/3);
+    PersistentHomology sparse_rips_homology(sparse_filtration);
 
 	PersistenceDiagram *sparse_rips_pd = sparse_rips_homology.compute_persistence();
 
