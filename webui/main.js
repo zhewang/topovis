@@ -1,11 +1,52 @@
-d3.csv('mesh.csv', function(data) {
+var catSelection = [true, true, true, true];
+var original_data;
 
-    // load data
-    for (var i = 0; i < data.length; i ++) {
-        data[i].px = Number(data[i].px);
-        data[i].py = Number(data[i].py);
-        data[i].c = Number(data[i].c);
-    }
+$(document).ready(function(){
+
+    // create a default filter
+
+    // calculation button
+    $('#btn_cal').on('click', function () {
+
+        var selected = [];
+        for (var i = 0; i < original_data.length; i ++) {
+            if (catSelection[original_data[i].c] == true)
+                selected.push(original_data[i]);
+        }
+
+        $.ajax({
+            url: 'http://localhost:8800/query',
+            method: 'POST',
+            dataType: 'json',
+            data: JSON.stringify(selected),
+            success: function(json) {
+                //var str = JSON.stringify(json, null, 2);
+                console.log(json);
+            }
+        });
+
+    });
+
+
+    // load data and plot
+    d3.csv('mesh.csv', function(data) {
+
+        // load data
+        for (var i = 0; i < data.length; i ++) {
+            data[i].px = Number(data[i].px);
+            data[i].py = Number(data[i].py);
+            data[i].c = Number(data[i].c);
+        }
+
+        original_data = data;
+        plotScatter(data);
+
+    });
+
+});
+
+
+function plotScatter(data) {
 
     // plot
     var margin = {top: 20, right: 20, bottom: 20, left: 20}
@@ -58,15 +99,13 @@ d3.csv('mesh.csv', function(data) {
 
     var g = main.append("svg:g");
 
-    // create a default filter
-    var catSelection = [true, true, true, true];
 
     var plotDots = function (sel) {
         sel.append("circle")
-        .attr("cx", function (d) { return x(d.px); } )
-        .attr("cy", function (d) { return y(d.py); } )
-        .attr("fill", function (d) { return colorscale(d.c); })
-        .attr("r", 4);
+            .attr("cx", function (d) { return x(d.px); } )
+            .attr("cy", function (d) { return y(d.py); } )
+            .attr("fill", function (d) { return colorscale(d.c); })
+            .attr("r", 4);
     };
 
     g.selectAll("circle")
@@ -85,4 +124,4 @@ d3.csv('mesh.csv', function(data) {
             .filter(function(d) { return catSelection[d.c-1]; })
             .call(plotDots);
     });
-});
+}

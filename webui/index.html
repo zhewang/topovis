@@ -17,19 +17,30 @@
                 fill: none;
             }
 
+            .catChkbox {
+                margin-left: 30px;
+            }
+
         </style>
+
+        <script src="./jquery-3.1.1.min.js"></script>
         <script type="text/javascript" src="https://d3js.org/d3.v4.min.js"></script>
-        <script type="text/javascript" src="scatterplot.js"></script>
+        <script type="text/javascript" src="main.js"></script>
     </head>
     <body>
         <div class='content'>
             <div id='scatterplot'></div>
+
+            <div>
             <form id='catselection'>
-                <input type="checkbox" name="category" value="1" checked='true'> Category 1 </input> </br>
-                <input type="checkbox" name="category" value="2" checked='true'> Category 2 </input> </br>
-                <input type="checkbox" name="category" value="3" checked='true'> Category 3 </input> </br>
-                <input type="checkbox" name="category" value="4" checked='true'> Category 4 </input>
+                <input class='catChkbox' type="checkbox" name="category" value="1" checked='true'> Category 1 </input>
+                <input class='catChkbox' type="checkbox" name="category" value="2" checked='true'> Category 2 </input>
+                <input class='catChkbox' type="checkbox" name="category" value="3" checked='true'> Category 3 </input>
+                <input class='catChkbox' type="checkbox" name="category" value="4" checked='true'> Category 4 </input>
             </form>
+            <div>
+
+            <button type="button" id="btn_cal">Calculate</button>
         </div>
     </body>
 </html>

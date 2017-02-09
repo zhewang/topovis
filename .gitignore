@@ -1,3 +1,6 @@
+# Dirs
+build/
+
 # OSX Cache
 .DS_Store
 

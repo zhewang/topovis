@@ -8,7 +8,7 @@ py = 0.
 qx = 0.5
 qy = math.sqrt(3)/2.
 
-l = 40  # the length of the qudrilateral
+l = 15  # the length of the qudrilateral
 r = l*math.sqrt(3)/4.  # the circle inside the mesh quadrilateral
 # center of the circle
 cx = l*3./4.
