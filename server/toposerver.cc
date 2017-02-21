@@ -36,6 +36,34 @@ void read_points_from_json(json& data, Points& points)
     }
 }
 
+json persistence_homology_split(json data)
+{
+	Points points;
+	read_points_from_json(data, points);
+
+	int max_d = 2;
+
+    //Filtration* full_filtration = new RipsFiltration(points, max_d);
+    //PersistentHomology sparse_rips_homology(full_filtration);
+    Filtration* sparse_filtration = new SparseRipsFiltration(points, max_d, 1.0/3);
+    PersistentHomology sparse_rips_homology(sparse_filtration);
+
+    PHCycle* reduction = sparse_rips_homology.compute_matrix();
+	PersistenceDiagram *sparse_rips_pd = sparse_rips_homology.compute_persistence_from_matrix(reduction);
+
+	sparse_rips_pd->sort_pairs_by_persistence();
+
+    std::stringstream result;
+	for(unsigned i = 0; i < sparse_rips_pd->num_pairs(); i++)  {
+		PersistentPair pairing = sparse_rips_pd->get_pair(i);
+		//printf("%u %.7f %.7f\n", pairing.dim(), pairing.birth_time(), pairing.death_time());
+        result << pairing.dim() << " "
+            << pairing.birth_time() << " "
+            << pairing.death_time() << "\n";
+	}
+    return result.str();
+}
+
 json persistence_homology(json data)
 {
 	Points points;
@@ -67,7 +95,8 @@ json persistence_homology(json data)
 static void handle_query_call(struct mg_connection *c, struct http_message *hm) {
 
   json q = json::parse(string(hm->body.p, hm->body.len));
-  json result = persistence_homology(q);
+  //json result = persistence_homology(q);
+  json result = persistence_homology_split(q);
 
   /* Send result */
   std::string msg_content = result.dump();

@@ -21,6 +21,9 @@ class PersistentHomology  {
 
 		PHCycle merge_cycles(const PHCycle & _c1, const PHCycle & _c2);
 
+        PHCycle* compute_matrix();
+        PersistenceDiagram* compute_persistence_from_matrix(PHCycle* reduction);
+
 	private:
 		Filtration* filtration;
 		int max_d;
