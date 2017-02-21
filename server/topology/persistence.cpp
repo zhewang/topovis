@@ -162,8 +162,9 @@ PersistenceDiagram *PersistentHomology::compute_persistence_from_matrix(PHCycle*
 			continue;
 
 		PersistentPair persistent_pair(birth_simplex.dim(), birth_simplex.get_simplex_distance(), death_simplex.get_simplex_distance());
-		Simplex first_simplex = filtration->get_simplex(pairing.first);
-		int simplex_dim = first_simplex.dim();
+
+		//Simplex first_simplex = filtration->get_simplex(pairing.first);
+		//int simplex_dim = first_simplex.dim();
 
 		//if(retain_generators)  {
 			//std::list<int> generating_cycle = this->expand_chain(pairing.first+1,chains);
