@@ -46,10 +46,16 @@ json persistence_homology_split(json data)
     //Filtration* full_filtration = new RipsFiltration(points, max_d);
     //PersistentHomology sparse_rips_homology(full_filtration);
     Filtration* sparse_filtration = new SparseRipsFiltration(points, max_d, 1.0/3);
-    PersistentHomology sparse_rips_homology(sparse_filtration);
+    PersistentHomology ph(sparse_filtration);
 
-    PHCycle* reduction = sparse_rips_homology.compute_matrix();
-	PersistenceDiagram *sparse_rips_pd = sparse_rips_homology.compute_persistence_from_matrix(reduction);
+    std::vector<PHCycle> reduction;
+    Filtration* filtration;
+    int loaded_max_d;
+    // TODO load these from saved data
+
+    ph.compute_matrix(reduction);
+
+	PersistenceDiagram *sparse_rips_pd = ph.compute_persistence(reduction, filtration, loaded_max_d);
 
 	sparse_rips_pd->sort_pairs_by_persistence();
 

@@ -6,9 +6,11 @@
 #include "filtration.h"
 #include "sparse_rips_filtration.h"
 #include "rips_filtration.h"
+#include "ComputationTimer.h"
+
 #include <list>
 #include <map>
-#include "ComputationTimer.h"
+#include <vector>
 
 typedef std::list<int> PHCycle;
 
@@ -17,8 +19,10 @@ class PersistentHomology  {
 		PersistentHomology(Filtration* _filtration, bool _retainGenerators=false);
 		~PersistentHomology();
 
-        PHCycle* compute_matrix();
-        PersistenceDiagram* compute_persistence_from_matrix(PHCycle* reduction);
+        bool compute_matrix(std::vector<PHCycle> &reduction);
+        PersistenceDiagram* compute_persistence(std::vector<PHCycle> &reduction,
+                                                Filtration* _filtration,
+                                                int _max_d);
 
 	private:
 		Filtration* filtration;

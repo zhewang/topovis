@@ -1,5 +1,9 @@
 #include "persistence.h"
 
+//#include <fstream>
+//#include <boost/archive/text_oarchive.hpp>
+//#include <boost/archive/text_iarchive.hpp>
+
 PersistentHomology::PersistentHomology(Filtration* _filtration, bool _retainGenerators)  {
 	filtration = _filtration;
 	max_d = filtration->maxD();
@@ -8,7 +12,7 @@ PersistentHomology::PersistentHomology(Filtration* _filtration, bool _retainGene
 PersistentHomology::~PersistentHomology()  {
 }
 
-PHCycle* PersistentHomology::compute_matrix()  {
+bool PersistentHomology::compute_matrix(std::vector<PHCycle> &reduction)  {
 	// build filtration
 	ComputationTimer filtration_timer("filtration computation time");
 	filtration_timer.start();
@@ -24,10 +28,10 @@ PHCycle* PersistentHomology::compute_matrix()  {
 		simplex_mapping[filtration->get_simplex(i).unique_unoriented_id()] = i+1;
 
 	// initialize reduction to boundaries - just a vector of lists
-	PHCycle* reduction = new PHCycle[filtration_size+1];
+    reduction.resize(filtration_size+1);
 
 	// initialize chains to identities
-	PHCycle* chains = new PHCycle[filtration_size+1];
+    std::vector<PHCycle> chains(filtration_size+1);
 
 	// reserve 1st entry as dummy simplex, in line with reduced persistence
 	reduction[0] = PHCycle();
@@ -62,7 +66,7 @@ PHCycle* PersistentHomology::compute_matrix()  {
 	persistence_timer.start();
 
 	// initialize death cycle reference - nothing there yet, so just give it all -1
-	int* death_cycle_ref = new int[filtration_size+1];
+    std::vector<int> death_cycle_ref(filtration_size+1);
 	for(int i = 0; i < filtration_size+1; i++)
 		death_cycle_ref[i] = -1;
 
@@ -122,14 +126,15 @@ PHCycle* PersistentHomology::compute_matrix()  {
 	persistence_timer.end();
 	persistence_timer.dump_time();
 
-	delete [] chains;
-	delete [] death_cycle_ref;
-
-    // TODO save reduction
-    return reduction;
+    return true;
 }
 
-PersistenceDiagram *PersistentHomology::compute_persistence_from_matrix(PHCycle* reduction)  {
+PersistenceDiagram *PersistentHomology::compute_persistence(
+        std::vector<PHCycle> &reduction, Filtration* _filtration, int _max_d)  {
+
+    // TODO uncomment these
+    //this->filtration = _filtration;
+    //this->max_d = _max_d;
 
 	int filtration_size = filtration->filtration_size();
 
@@ -151,8 +156,6 @@ PersistenceDiagram *PersistentHomology::compute_persistence_from_matrix(PHCycle*
 			}
 		}
 	}
-
-    delete [] reduction;
 
 	std::vector<PersistentPair> persistent_pairs;
 	for(int i = 0; i < persistence_pairing.size(); i++)  {
