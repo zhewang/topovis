@@ -49,10 +49,10 @@ json persistence_homology_split(json data)
 
 	int max_d = 2;
 
-    //Filtration* full_filtration = new RipsFiltration(points, max_d);
-    //PersistentHomology sparse_rips_homology(full_filtration);
-    Filtration* sparse_filtration = new SparseRipsFiltration(points, max_d, 1.0/3);
-    PersistentHomology ph(sparse_filtration);
+    Filtration* full_filtration = new RipsFiltration(points, max_d);
+    PersistentHomology ph(full_filtration);
+    //Filtration* sparse_filtration = new SparseRipsFiltration(points, max_d, 1.0/3);
+    //PersistentHomology ph(sparse_filtration);
 
     std::vector<PHCycle> reduction;
     Filtration* filtration;
