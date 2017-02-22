@@ -4,12 +4,18 @@
 #include <ctime>
 #include <typeinfo>
 #include <cstdlib>
+#include <fstream>
 
 //#include <boost/random.hpp>
 //#include <boost/generator_iterator.hpp>
 //#include <boost/date_time/gregorian/gregorian.hpp>
 //#include <boost/date_time/posix_time/posix_time.hpp>
 //#include <boost/algorithm/string.hpp>
+
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/serialization/vector.hpp>
+#include <boost/serialization/list.hpp>
 
 #include "mongoose.h"
 #include "json.hpp"
@@ -55,7 +61,23 @@ json persistence_homology_split(json data)
 
     ph.compute_matrix(reduction);
 
-	PersistenceDiagram *sparse_rips_pd = ph.compute_persistence(reduction, filtration, loaded_max_d);
+    // serialize vector
+    {
+        std::ofstream ofs("reduction.dat");
+        boost::archive::text_oarchive oa(ofs);
+        oa & reduction;
+    }
+
+    std::vector<PHCycle> new_reduction;
+
+    // load serialized vector
+    {
+        std::ifstream ifs("reduction.dat");
+        boost::archive::text_iarchive ia(ifs);
+        ia & new_reduction;
+    }
+
+	PersistenceDiagram *sparse_rips_pd = ph.compute_persistence(new_reduction, filtration, loaded_max_d);
 
 	sparse_rips_pd->sort_pairs_by_persistence();
 

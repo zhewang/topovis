@@ -1,9 +1,5 @@
 #include "persistence.h"
 
-//#include <fstream>
-//#include <boost/archive/text_oarchive.hpp>
-//#include <boost/archive/text_iarchive.hpp>
-
 PersistentHomology::PersistentHomology(Filtration* _filtration, bool _retainGenerators)  {
 	filtration = _filtration;
 	max_d = filtration->maxD();
@@ -28,6 +24,7 @@ bool PersistentHomology::compute_matrix(std::vector<PHCycle> &reduction)  {
 		simplex_mapping[filtration->get_simplex(i).unique_unoriented_id()] = i+1;
 
 	// initialize reduction to boundaries - just a vector of lists
+    reduction.clear();
     reduction.resize(filtration_size+1);
 
 	// initialize chains to identities
