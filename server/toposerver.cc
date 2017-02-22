@@ -89,6 +89,8 @@ json persistence_homology_split(json data)
             << pairing.birth_time() << " "
             << pairing.death_time() << "\n";
 	}
+
+    delete sparse_rips_pd;
     return result.str();
 }
 
