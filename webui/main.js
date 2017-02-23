@@ -14,13 +14,22 @@ $(document).ready(function(){
                 selected.push(original_data[i]);
         }
 
+        var selection_id = '';
+        for (var i = 0; i < catSelection.length; i ++) {
+            if (catSelection[i] == true) {
+                selection_id += String(i+1);
+            }
+        }
+
         if (selected.length > 0) {
+
+            var info = {'points': selected, 'sel_id': selection_id};
 
             $.ajax({
                 url: 'http://localhost:8800/query',
                 method: 'POST',
                 dataType: 'json',
-                data: JSON.stringify(selected),
+                data: JSON.stringify(info),
                 success: function(json) {
                     plotPersistence(json);
                 }

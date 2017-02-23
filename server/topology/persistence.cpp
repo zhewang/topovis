@@ -126,14 +126,16 @@ bool PersistentHomology::compute_matrix(std::vector<PHCycle> &reduction)  {
     return true;
 }
 
-PersistenceDiagram *PersistentHomology::compute_persistence(
-        std::vector<PHCycle> &reduction, Filtration* _filtration, int _max_d)  {
+PersistenceDiagram *PersistentHomology::compute_persistence(std::vector<PHCycle> &reduction) {
 
-    // TODO uncomment these
-    //this->filtration = _filtration;
-    //this->max_d = _max_d;
-
+	// build filtration
+	ComputationTimer filtration_timer("filtration computation time");
+	filtration_timer.start();
+	filtration->build_filtration();
+	filtration_timer.end();
+	filtration_timer.dump_time();
 	int filtration_size = filtration->filtration_size();
+	std::cout << "total number of simplices: " << filtration_size << std::endl;
 
 	std::vector< std::pair<int,int> > persistence_pairing;
 

@@ -33,7 +33,7 @@ static struct mg_serve_http_opts s_http_server_opts;
 
 void read_points_from_json(json& data, Points& points)
 {
-    for(auto it = data.begin(); it != data.end(); it ++) {
+    for(auto it = data["points"].begin(); it != data["points"].end(); it ++) {
         json t = *it;
         vector<double> p;
         p.push_back(t["px"]);
@@ -42,7 +42,7 @@ void read_points_from_json(json& data, Points& points)
     }
 }
 
-json persistence_homology_split(json data)
+json persistence_homology(json data)
 {
 	Points points;
 	read_points_from_json(data, points);
@@ -55,15 +55,56 @@ json persistence_homology_split(json data)
     //PersistentHomology ph(sparse_filtration);
 
     std::vector<PHCycle> reduction;
-    Filtration* filtration;
-    int loaded_max_d;
-    // TODO load these from saved data
+
+    string sel_id = data["sel_id"];
+    string filename = sel_id + "_reduction.txt";
+
+    // load serialized vector
+    {
+        std::ifstream ifs(filename);
+        boost::archive::text_iarchive ia(ifs);
+        ia & reduction;
+    }
+
+	PersistenceDiagram *rips_pd = ph.compute_persistence(reduction);
+
+	rips_pd->sort_pairs_by_persistence();
+
+    std::stringstream result;
+	for(unsigned i = 0; i < rips_pd->num_pairs(); i++)  {
+		PersistentPair pairing = rips_pd->get_pair(i);
+		//printf("%u %.7f %.7f\n", pairing.dim(), pairing.birth_time(), pairing.death_time());
+        result << pairing.dim() << " "
+            << pairing.birth_time() << " "
+            << pairing.death_time() << "\n";
+	}
+
+    delete rips_pd;
+    return result.str();
+}
+
+json compute_reduction_matrix(json data)
+{
+	Points points;
+	read_points_from_json(data, points);
+
+	int max_d = 2;
+
+    Filtration* full_filtration = new RipsFiltration(points, max_d);
+    PersistentHomology ph(full_filtration);
+    //Filtration* sparse_filtration = new SparseRipsFiltration(points, max_d, 1.0/3);
+    //PersistentHomology ph(sparse_filtration);
+
+    std::vector<PHCycle> reduction;
 
     ph.compute_matrix(reduction);
 
+    string sel_id = data["sel_id"];
+    string filename = sel_id + "_reduction.txt";
+
     // serialize vector
     {
-        std::ofstream ofs("reduction.dat");
+        std::ofstream ofs(filename);
         boost::archive::text_oarchive oa(ofs);
         oa & reduction;
     }
@@ -72,12 +113,12 @@ json persistence_homology_split(json data)
 
     // load serialized vector
     {
-        std::ifstream ifs("reduction.dat");
+        std::ifstream ifs(filename);
         boost::archive::text_iarchive ia(ifs);
         ia & new_reduction;
     }
 
-	PersistenceDiagram *sparse_rips_pd = ph.compute_persistence(new_reduction, filtration, loaded_max_d);
+	PersistenceDiagram *sparse_rips_pd = ph.compute_persistence(new_reduction);
 
 	sparse_rips_pd->sort_pairs_by_persistence();
 
@@ -97,7 +138,7 @@ json persistence_homology_split(json data)
 static void handle_query_call(struct mg_connection *c, struct http_message *hm) {
 
   json q = json::parse(string(hm->body.p, hm->body.len));
-  json result = persistence_homology_split(q);
+  json result = persistence_homology(q);
 
   /* Send result */
   std::string msg_content = result.dump();

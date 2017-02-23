@@ -20,9 +20,7 @@ class PersistentHomology  {
 		~PersistentHomology();
 
         bool compute_matrix(std::vector<PHCycle> &reduction);
-        PersistenceDiagram* compute_persistence(std::vector<PHCycle> &reduction,
-                                                Filtration* _filtration,
-                                                int _max_d);
+        PersistenceDiagram* compute_persistence(std::vector<PHCycle> &reduction);
 
 	private:
 		Filtration* filtration;
