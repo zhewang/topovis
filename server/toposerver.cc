@@ -24,6 +24,7 @@
 #include "geometry/covertree.h"
 #include "topology/sparse_rips_filtration.h"
 #include "topology/rips_filtration.h"
+#include "topology/fixed_filtration.h"
 
 using json = nlohmann::json;
 
@@ -40,6 +41,50 @@ void read_points_from_json(json& data, Points& points)
         p.push_back(t["py"]);
         points.push_back(Vector(p));
     }
+}
+
+json simple_ph()
+{
+    Filtration* f = new FixedFiltration();
+    PersistentHomology ph(f);
+
+    std::vector<PHCycle> reduction;
+
+    ph.compute_matrix(reduction);
+
+    string filename = "fixed_reduction.txt";
+
+    // serialize vector
+    {
+        std::ofstream ofs(filename);
+        boost::archive::text_oarchive oa(ofs);
+        oa & reduction;
+    }
+
+    std::vector<PHCycle> new_reduction;
+
+    // load serialized vector
+    {
+        std::ifstream ifs(filename);
+        boost::archive::text_iarchive ia(ifs);
+        ia & new_reduction;
+    }
+
+	PersistenceDiagram *pd = ph.compute_persistence(new_reduction);
+
+    pd->sort_pairs_by_persistence();
+
+    std::stringstream result;
+	for(unsigned i = 0; i < pd->num_pairs(); i++)  {
+		PersistentPair pairing = pd->get_pair(i);
+		//printf("%u %.7f %.7f\n", pairing.dim(), pairing.birth_time(), pairing.death_time());
+        result << pairing.dim() << " "
+            << pairing.birth_time() << " "
+            << pairing.death_time() << "\n";
+	}
+
+    delete pd;
+    return result.str();
 }
 
 json persistence_homology(json data)
@@ -138,7 +183,8 @@ json compute_reduction_matrix(json data)
 static void handle_query_call(struct mg_connection *c, struct http_message *hm) {
 
   json q = json::parse(string(hm->body.p, hm->body.len));
-  json result = persistence_homology(q);
+  //json result = persistence_homology(q);
+  json result = simple_ph();
 
   /* Send result */
   std::string msg_content = result.dump();
