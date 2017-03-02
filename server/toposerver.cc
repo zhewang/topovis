@@ -45,7 +45,21 @@ void read_points_from_json(json& data, Points& points)
 
 json simple_ph()
 {
+    // build filtration
     Filtration* f = new FixedFiltration();
+    f->build_filtration();
+
+    std::set<int> selection = {1,2,3};
+
+    Filtration* selectedSimplices = new FixedFiltration();
+    Filtration* unselectedSimplices = new FixedFiltration();
+
+    f->getSubSet(selection, selectedSimplices, unselectedSimplices);
+    //selectedSimplices->print();
+    //unselectedSimplices->print();
+
+
+    // calculate ph
     PersistentHomology ph(f);
 
     std::vector<PHCycle> reduction;

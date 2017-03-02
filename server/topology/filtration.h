@@ -4,6 +4,7 @@
 #include "../geometry/point_incs.h"
 #include "simplex.h"
 #include <set>
+#include <vector>
 
 class Filtration  {
 	public:
@@ -16,6 +17,14 @@ class Filtration  {
 		int maxD()  { return max_d; }
 
 		virtual bool build_filtration();
+
+        bool getSubSet(std::set<int> &selectedVertices,
+                       Filtration *selectedSimplices,
+                       Filtration *unselectedSimplices );
+
+        void addSimplex(Simplex s) { this->all_simplices.push_back(s); }
+
+        void print();
 
 	protected:
 		std::vector<Simplex> all_simplices;

@@ -3,20 +3,23 @@
 PersistentHomology::PersistentHomology(Filtration* _filtration, bool _retainGenerators)  {
 	filtration = _filtration;
 	max_d = filtration->maxD();
+    if( filtration->filtration_size() == 0 ) {
+        // build filtration
+        ComputationTimer filtration_timer("filtration computation time");
+        filtration_timer.start();
+        filtration->build_filtration();
+        filtration_timer.end();
+        filtration_timer.dump_time();
+        int filtration_size = filtration->filtration_size();
+        std::cout << "total number of simplices: " << filtration_size << std::endl;
+    }
 }
 
 PersistentHomology::~PersistentHomology()  {
 }
 
 bool PersistentHomology::compute_matrix(std::vector<PHCycle> &reduction)  {
-	// build filtration
-	ComputationTimer filtration_timer("filtration computation time");
-	filtration_timer.start();
-	filtration->build_filtration();
-	filtration_timer.end();
-	filtration_timer.dump_time();
 	int filtration_size = filtration->filtration_size();
-	std::cout << "total number of simplices: " << filtration_size << std::endl;
 
 	// construct mapping between simplices and their identifiers -> only necessary for identifying simplex faces
 	std::map<std::string,int> simplex_mapping;
@@ -128,14 +131,7 @@ bool PersistentHomology::compute_matrix(std::vector<PHCycle> &reduction)  {
 
 PersistenceDiagram *PersistentHomology::compute_persistence(std::vector<PHCycle> &reduction) {
 
-	// build filtration
-	ComputationTimer filtration_timer("filtration computation time");
-	filtration_timer.start();
-	filtration->build_filtration();
-	filtration_timer.end();
-	filtration_timer.dump_time();
 	int filtration_size = filtration->filtration_size();
-	std::cout << "total number of simplices: " << filtration_size << std::endl;
 
 	std::vector< std::pair<int,int> > persistence_pairing;
 
