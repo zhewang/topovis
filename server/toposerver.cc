@@ -55,8 +55,8 @@ json simple_ph()
     Filtration* unselectedSimplices = new FixedFiltration();
 
     f->getSubSet(selection, selectedSimplices, unselectedSimplices);
-    //selectedSimplices->print();
-    //unselectedSimplices->print();
+    selectedSimplices->print();
+    unselectedSimplices->print();
 
 
     // calculate ph
@@ -66,25 +66,7 @@ json simple_ph()
 
     ph.compute_matrix(reduction);
 
-    string filename = "fixed_reduction.txt";
-
-    // serialize vector
-    {
-        std::ofstream ofs(filename);
-        boost::archive::text_oarchive oa(ofs);
-        oa & reduction;
-    }
-
-    std::vector<PHCycle> new_reduction;
-
-    // load serialized vector
-    {
-        std::ifstream ifs(filename);
-        boost::archive::text_iarchive ia(ifs);
-        ia & new_reduction;
-    }
-
-	PersistenceDiagram *pd = ph.compute_persistence(new_reduction);
+	PersistenceDiagram *pd = ph.compute_persistence(reduction);
 
     pd->sort_pairs_by_persistence();
 

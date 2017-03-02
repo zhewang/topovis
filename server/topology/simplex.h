@@ -21,6 +21,8 @@ class Simplex  {
 			return cached_distance;
 		}
 
+		MetricSpace* get_metric_space() { return this->metric_space; }
+
 		void compute_simplex_distance()  {
 			for(unsigned i = 0; i < simplex.size(); i++)  {
 				for(unsigned j = 0; j < i; j++)  {

@@ -16,7 +16,7 @@ bool Filtration::getSubSet(
     Filtration *selectedSimplices,
     Filtration *unselectedSimplices ) {
 
-    for(int i = 0; i < this->all_simplices.size(); i ++) {
+    for(int i = 0; i < this->filtration_size(); i ++) {
         Simplex s = this->get_simplex(i);
 
         bool selected = true;
@@ -33,6 +33,31 @@ bool Filtration::getSubSet(
             unselectedSimplices->addSimplex(s);
         }
     }
+
+    // unselectedSimplices is not closed by now, make it closed
+    // Algorithm: for any p-simplex (p>0), if any of its vertex is not in
+    // selectedVertices, add it to the complex. By our setting, only 0-simplex
+    // are needed to make the subcomplex closed.
+    std::set<int> addedVertices;
+    for(int i = 0; i < unselectedSimplices->filtration_size(); i ++) {
+        Simplex s = unselectedSimplices->get_simplex(i);
+        if(s.dim() == 0) {
+            continue;
+        }
+
+        for(int j = 0; j < s.dim()+1; j ++) {
+            if ( selectedVertices.find(s.vertex(j)) != selectedVertices.end() ) {
+                addedVertices.insert(s.vertex(j));
+            }
+        }
+    }
+
+    MetricSpace* mspace = unselectedSimplices->get_simplex(0).get_metric_space();
+    for(auto it = addedVertices.begin(); it != addedVertices.end(); it ++) {
+        std::vector<int> add = {*it};
+        unselectedSimplices->addSimplex(Simplex(add, mspace));
+    }
+    // TODO sort filtration
 
     return true;
 }
