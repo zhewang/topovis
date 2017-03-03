@@ -98,7 +98,10 @@ bool Filtration::binarySplit(
 }
 
 void Filtration::print() {
+    std::cout << "{ ";
     for(int i = 0; i < this->filtration_size(); i ++) {
-        std::cout << this->get_simplex(i) << std::endl;
+        if(i > 0) { std::cout << ", "; }
+        std::cout << "{" << this->get_simplex(i) << "}";
     }
+    std::cout << " }" << std::endl;
 }

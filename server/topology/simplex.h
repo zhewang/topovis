@@ -77,7 +77,8 @@ class Simplex  {
 
 		friend std::ostream& operator <<(std::ostream &out, const Simplex & _simplex)  {
 			for(int i = 0; i <= _simplex.dim(); i++)  {
-				out << " " << _simplex.vertex(i);
+                if( i > 0) { out << " "; }
+				out <<  _simplex.vertex(i);
 			}
 			return out;
 		}
