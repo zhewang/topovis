@@ -14,8 +14,9 @@ bool Filtration::build_filtration() {
 
 bool Filtration::binarySplit(
     std::set<int> &selectedVertices,
-    Filtration *selectedSimplices,
-    Filtration *unselectedSimplices ) {
+    Filtration *selectedComplex,
+    Filtration *unselectedComplex,
+    Filtration *blowupComplex) {
 
     std::vector<Simplex> unSelected_0;
     std::vector<Simplex> unSelected_1;
@@ -33,7 +34,7 @@ bool Filtration::binarySplit(
         }
 
         if (selected) {
-            selectedSimplices->addSimplex(s);
+            selectedComplex->addSimplex(s);
         } else {
             //unselectedSimplices->addSimplex(s);
             switch(s.dim()) {
@@ -58,6 +59,7 @@ bool Filtration::binarySplit(
             auto find_it = std::find(unSelected_1.begin(), unSelected_1.end(), *face_it);
             if(find_it == unSelected_1.end()) {
                 unSelected_1.push_back(*face_it);
+                blowupComplex->addSimplex(*face_it);
             }
         }
     }
@@ -71,20 +73,24 @@ bool Filtration::binarySplit(
             auto find_it = std::find(unSelected_0.begin(), unSelected_0.end(), *face_it);
             if(find_it == unSelected_0.end()) {
                 unSelected_0.push_back(*face_it);
+                blowupComplex->addSimplex(*face_it);
             }
         }
     }
 
+    // TODO make blowup complex closed
 
+    // assemble unselected complex
     for(auto it = unSelected_0.begin(); it != unSelected_0.end(); it ++) {
-        unselectedSimplices->addSimplex(*it);
+        unselectedComplex->addSimplex(*it);
     }
     for(auto it = unSelected_1.begin(); it != unSelected_1.end(); it ++) {
-        unselectedSimplices->addSimplex(*it);
+        unselectedComplex->addSimplex(*it);
     }
     for(auto it = unSelected_2.begin(); it != unSelected_2.end(); it ++) {
-        unselectedSimplices->addSimplex(*it);
+        unselectedComplex->addSimplex(*it);
     }
+
 
     // TODO what we added are just the blowup complex??
 

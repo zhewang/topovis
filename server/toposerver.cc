@@ -51,13 +51,14 @@ json simple_ph()
 
     std::set<int> selection = {1,2,3};
 
-    Filtration* selectedSimplices = new FixedFiltration();
-    Filtration* unselectedSimplices = new FixedFiltration();
+    Filtration* selectedComplex = new FixedFiltration();
+    Filtration* unselectedComplex = new FixedFiltration();
+    Filtration* blowupComplex = new FixedFiltration();
 
-    f->binarySplit(selection, selectedSimplices, unselectedSimplices);
-    selectedSimplices->print();
-    unselectedSimplices->print();
-
+    f->binarySplit(selection, selectedComplex, unselectedComplex, blowupComplex);
+    selectedComplex->print();
+    unselectedComplex->print();
+    blowupComplex->print();
 
     // calculate ph
     PersistentHomology ph(f);
