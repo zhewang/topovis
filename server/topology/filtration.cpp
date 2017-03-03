@@ -1,4 +1,5 @@
 #include "filtration.h"
+#include <algorithm>
 
 Filtration::Filtration(int _maxD)  {
 	max_d = _maxD;
@@ -11,10 +12,14 @@ bool Filtration::build_filtration() {
   return false;
 }
 
-bool Filtration::getSubSet(
+bool Filtration::binarySplit(
     std::set<int> &selectedVertices,
     Filtration *selectedSimplices,
     Filtration *unselectedSimplices ) {
+
+    std::vector<Simplex> unSelected_0;
+    std::vector<Simplex> unSelected_1;
+    std::vector<Simplex> unSelected_2;
 
     for(int i = 0; i < this->filtration_size(); i ++) {
         Simplex s = this->get_simplex(i);
@@ -30,34 +35,58 @@ bool Filtration::getSubSet(
         if (selected) {
             selectedSimplices->addSimplex(s);
         } else {
-            unselectedSimplices->addSimplex(s);
+            //unselectedSimplices->addSimplex(s);
+            switch(s.dim()) {
+                case 0: unSelected_0.push_back(s); break;
+                case 1: unSelected_1.push_back(s); break;
+                case 2: unSelected_2.push_back(s); break;
+                default: break;
+            }
         }
     }
 
     // unselectedSimplices is not closed by now, make it closed
     // Algorithm: for any p-simplex (p>0), if any of its vertex is not in
-    // selectedVertices, add it to the complex. By our setting, only 0-simplex
-    // are needed to make the subcomplex closed.
-    std::set<int> addedVertices;
-    for(int i = 0; i < unselectedSimplices->filtration_size(); i ++) {
-        Simplex s = unselectedSimplices->get_simplex(i);
-        if(s.dim() == 0) {
-            continue;
-        }
+    // selectedVertices, add it to the complex.
+    // TODO we should justify why we do this
 
-        for(int j = 0; j < s.dim()+1; j ++) {
-            if ( selectedVertices.find(s.vertex(j)) != selectedVertices.end() ) {
-                addedVertices.insert(s.vertex(j));
+    // missing edges from 2-simplex
+    for(auto it = unSelected_2.begin(); it != unSelected_2.end(); it ++) {
+        Simplex s = *it;
+        std::vector<Simplex> faces = s.faces();
+        for(auto face_it = faces.begin(); face_it != faces.end(); face_it ++) {
+            auto find_it = std::find(unSelected_1.begin(), unSelected_1.end(), *face_it);
+            if(find_it == unSelected_1.end()) {
+                unSelected_1.push_back(*face_it);
             }
         }
     }
 
-    MetricSpace* mspace = unselectedSimplices->get_simplex(0).get_metric_space();
-    for(auto it = addedVertices.begin(); it != addedVertices.end(); it ++) {
-        std::vector<int> add = {*it};
-        unselectedSimplices->addSimplex(Simplex(add, mspace));
+
+    // missing vertices from 1-simplex
+    for(auto it = unSelected_1.begin(); it != unSelected_1.end(); it ++) {
+        Simplex s = *it;
+        std::vector<Simplex> faces = s.faces();
+        for(auto face_it = faces.begin(); face_it != faces.end(); face_it ++) {
+            auto find_it = std::find(unSelected_0.begin(), unSelected_0.end(), *face_it);
+            if(find_it == unSelected_0.end()) {
+                unSelected_0.push_back(*face_it);
+            }
+        }
     }
-    // TODO sort filtration
+
+
+    for(auto it = unSelected_0.begin(); it != unSelected_0.end(); it ++) {
+        unselectedSimplices->addSimplex(*it);
+    }
+    for(auto it = unSelected_1.begin(); it != unSelected_1.end(); it ++) {
+        unselectedSimplices->addSimplex(*it);
+    }
+    for(auto it = unSelected_2.begin(); it != unSelected_2.end(); it ++) {
+        unselectedSimplices->addSimplex(*it);
+    }
+
+    // TODO what we added are just the blowup complex??
 
     return true;
 }

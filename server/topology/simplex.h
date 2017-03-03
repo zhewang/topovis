@@ -44,6 +44,10 @@ class Simplex  {
 
 		std::vector<Simplex> faces();
 
+		inline bool operator==(const Simplex& _simp) const {
+            return this->simplex == _simp.simplex;
+        }
+
 		inline bool operator<(const Simplex& _simp) const {
 			int our_dim = this->dim(), other_dim = _simp.dim();
 			// lower dimensional simplices come before higher dimensional ones

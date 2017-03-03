@@ -2,6 +2,8 @@
 
 Simplex::Simplex(const std::vector<int> & _simplex, MetricSpace* _metricSpace)  {
 	simplex = _simplex;
+	std::sort(simplex.begin(), simplex.end());
+
 	metric_space = _metricSpace;
 	cached_distance = 0;
 }

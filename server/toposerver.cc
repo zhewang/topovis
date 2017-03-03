@@ -54,7 +54,7 @@ json simple_ph()
     Filtration* selectedSimplices = new FixedFiltration();
     Filtration* unselectedSimplices = new FixedFiltration();
 
-    f->getSubSet(selection, selectedSimplices, unselectedSimplices);
+    f->binarySplit(selection, selectedSimplices, unselectedSimplices);
     selectedSimplices->print();
     unselectedSimplices->print();
 

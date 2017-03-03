@@ -18,7 +18,7 @@ class Filtration  {
 
 		virtual bool build_filtration();
 
-        bool getSubSet(std::set<int> &selectedVertices,
+        bool binarySplit(std::set<int> &selectedVertices,
                        Filtration *selectedSimplices,
                        Filtration *unselectedSimplices );
 
