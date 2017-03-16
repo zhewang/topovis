@@ -70,59 +70,53 @@ bool PersistentHomology::compute_matrix(std::vector<PHCycle> &reduction)  {
 	for(int i = 0; i < filtration_size+1; i++)
 		death_cycle_ref[i] = -1;
 
-	// perform pairing - but do so in decreasing simplex dimension
-	//for(int d = max_d; d >= 0; d--)  {
-	for(int d = 0; d <= max_d; d++)  {
-		for(int i = 0; i < filtration_size; i++)  {
-			if(filtration->get_simplex(i).dim() != d)
-				continue;
-			int idx = i+1;
-			double simplex_distance = filtration->get_simplex(i).get_simplex_distance();
+	// perform reduction
+    for(int i = 0; i < filtration_size; i++)  {
+        int idx = i+1;
+        double simplex_distance = filtration->get_simplex(i).get_simplex_distance();
 
-			// until we are either definitively a birth cycle or a death cycle ...
-			int low_i = reduction[idx].back();
-			int num_chains_added = 0;
+        // until we are either definitively a birth cycle or a death cycle ...
+        int low_i = reduction[idx].back();
+        int num_chains_added = 0;
 
-			while(reduction[idx].size() > 0 && death_cycle_ref[low_i] != -1)  {
-				num_chains_added++;
-				// add the prior death cycle to us
-				int death_cycle_ind = death_cycle_ref[low_i];
+        while(reduction[idx].size() > 0 && death_cycle_ref[low_i] != -1)  {
+            num_chains_added++;
+            // add the prior death cycle to us
+            int death_cycle_ind = death_cycle_ref[low_i];
 
-				PHCycle::iterator our_cycle_iter = reduction[idx].begin(), added_cycle_iter = reduction[death_cycle_ind].begin();
-				while(added_cycle_iter != reduction[death_cycle_ind].end())  {
-					if(our_cycle_iter == reduction[idx].end())  {
-						reduction[idx].push_back(*added_cycle_iter);
-						++added_cycle_iter;
-						continue;
-					}
-					int sigma_1 = *our_cycle_iter, sigma_2 = *added_cycle_iter;
-					if(sigma_1 == sigma_2)  {
-						our_cycle_iter = reduction[idx].erase(our_cycle_iter);
-						++added_cycle_iter;
-					}
-					else if(sigma_1 < sigma_2)
-						++our_cycle_iter;
-					else  {
-						reduction[idx].insert(our_cycle_iter, sigma_2);
-						++added_cycle_iter;
-					}
-				}
-				//if(retain_generators && d != max_d)
-					//chains[idx].push_back(death_cycle_ind);
+            PHCycle::iterator our_cycle_iter = reduction[idx].begin(), added_cycle_iter = reduction[death_cycle_ind].begin();
+            while(added_cycle_iter != reduction[death_cycle_ind].end())  {
+                if(our_cycle_iter == reduction[idx].end())  {
+                    reduction[idx].push_back(*added_cycle_iter);
+                    ++added_cycle_iter;
+                    continue;
+                }
+                int sigma_1 = *our_cycle_iter, sigma_2 = *added_cycle_iter;
+                if(sigma_1 == sigma_2)  {
+                    our_cycle_iter = reduction[idx].erase(our_cycle_iter);
+                    ++added_cycle_iter;
+                }
+                else if(sigma_1 < sigma_2)
+                    ++our_cycle_iter;
+                else  {
+                    reduction[idx].insert(our_cycle_iter, sigma_2);
+                    ++added_cycle_iter;
+                }
+            }
+            //if(retain_generators && d != max_d)
+            //chains[idx].push_back(death_cycle_ind);
 
-				low_i = reduction[idx].back();
-			}
+            low_i = reduction[idx].back();
+        }
 
-			// if we are a death cycle then add us to the list, add as persistence pairings
-			if(reduction[idx].size() > 0)  {
-				death_cycle_ref[low_i] = idx;
-				// kill cycle at low_i, since it represents a birth
-				reduction[low_i] = PHCycle();
-				//if(low_i > 0)
-					//persistence_pairing.push_back(std::pair<int,int>(low_i-1,idx-1));
-			}
-		}
-	}
+        // if we are a death cycle then add us to the list, add as persistence pairings
+        if(reduction[idx].size() > 0)  {
+            death_cycle_ref[low_i] = idx;
+            // kill cycle at low_i, since it represents a birth
+            reduction[low_i] = PHCycle();
+        }
+    }
+
 	persistence_timer.end();
 	persistence_timer.dump_time();
 
@@ -135,22 +129,18 @@ PersistenceDiagram *PersistentHomology::compute_persistence(std::vector<PHCycle>
 
 	std::vector< std::pair<int,int> > persistence_pairing;
 
-	for(int d = 0; d <= max_d; d++)  {
-		for(int i = 0; i < filtration_size; i++)  {
-			if(filtration->get_simplex(i).dim() != d)
-				continue;
-			int idx = i+1;
+    for(int i = 0; i < filtration_size; i++)  {
+        int idx = i+1;
 
-			// until we are either definitively a birth cycle or a death cycle ...
-			int low_i = reduction[idx].back();
+        // until we are either definitively a birth cycle or a death cycle ...
+        int low_i = reduction[idx].back();
 
-			// if we are a death cycle then add us to the list, add as persistence pairings
-			if(reduction[idx].size() > 0)  {
-				if(low_i > 0)
-					persistence_pairing.push_back(std::pair<int,int>(low_i-1,idx-1));
-			}
-		}
-	}
+        // if we are a death cycle then add us to the list, add as persistence pairings
+        if(reduction[idx].size() > 0)  {
+            if(low_i > 0)
+                persistence_pairing.push_back(std::pair<int,int>(low_i-1,idx-1));
+        }
+    }
 
 	std::vector<PersistentPair> persistent_pairs;
 	for(int i = 0; i < persistence_pairing.size(); i++)  {
