@@ -1,32 +1,21 @@
 #include "persistence.h"
 
-PersistentHomology::PersistentHomology(Filtration* _filtration, bool _retainGenerators)  {
-	filtration = _filtration;
-	max_d = filtration->maxD();
-    if( filtration->filtration_size() == 0 ) {
-        // build filtration
-        ComputationTimer filtration_timer("filtration computation time");
-        filtration_timer.start();
-        filtration->build_filtration();
-        filtration_timer.end();
-        filtration_timer.dump_time();
-        int filtration_size = filtration->filtration_size();
-        std::cout << "total number of simplices: " << filtration_size << std::endl;
-    }
+PersistentHomology::PersistentHomology()  {
 }
 
 PersistentHomology::~PersistentHomology()  {
 }
 
-bool PersistentHomology::compute_matrix(std::vector<PHCycle> &reduction)  {
-	int filtration_size = filtration->filtration_size();
+std::vector<PHCycle> PersistentHomology::compute_matrix( std::vector<Simplex> &sc ) {
+	int filtration_size = sc.size();
 
 	// construct mapping between simplices and their IDs
 	std::map<std::string,int> simplex_mapping;
 	for(int i = 0; i < filtration_size; i++)
-		simplex_mapping[filtration->get_simplex(i).unique_unoriented_id()] = i+1;
+		simplex_mapping[sc[i].unique_unoriented_id()] = i+1;
 
 	// initialize reduction to boundaries - just a vector of lists
+    std::vector<PHCycle> reduction;
     reduction.clear();
     reduction.resize(filtration_size+1);
 
@@ -37,7 +26,7 @@ bool PersistentHomology::compute_matrix(std::vector<PHCycle> &reduction)  {
 	for(int i = 0; i < filtration_size; i++)  {
 		int idx = i+1;
 		reduction[idx] = PHCycle();
-		Simplex simplex = filtration->get_simplex(i);
+		Simplex simplex = sc[i];
 
 		// if 0-simplex, then reserve face as dummy simplex
 		if(simplex.dim()==0)  {
@@ -69,7 +58,6 @@ bool PersistentHomology::compute_matrix(std::vector<PHCycle> &reduction)  {
 	// perform reduction
     for(int i = 0; i < filtration_size; i++)  {
         int idx = i+1;
-        double simplex_distance = filtration->get_simplex(i).get_simplex_distance();
 
         // until we are either definitively a birth cycle or a death cycle ...
         int low_i = reduction[idx].back();
@@ -113,12 +101,12 @@ bool PersistentHomology::compute_matrix(std::vector<PHCycle> &reduction)  {
 	persistence_timer.end();
 	persistence_timer.dump_time();
 
-    return true;
+    return reduction;
 }
 
-PersistenceDiagram *PersistentHomology::compute_persistence(std::vector<PHCycle> &reduction) {
+PersistenceDiagram* PersistentHomology::compute_persistence(std::vector<PHCycle> &reduction, std::vector<Simplex> &sc) {
 
-	int filtration_size = filtration->filtration_size();
+	int filtration_size = sc.size();
 
 	std::vector< std::pair<int,int> > persistence_pairing;
 
@@ -138,7 +126,7 @@ PersistenceDiagram *PersistentHomology::compute_persistence(std::vector<PHCycle>
 	std::vector<PersistentPair> persistent_pairs;
 	for(int i = 0; i < persistence_pairing.size(); i++)  {
 		std::pair<int,int> pairing = persistence_pairing[i];
-		Simplex birth_simplex = filtration->get_simplex(pairing.first), death_simplex = filtration->get_simplex(pairing.second);
+		Simplex birth_simplex = sc[pairing.first], death_simplex = sc[pairing.second];
 		if(death_simplex.get_simplex_distance() == birth_simplex.get_simplex_distance())
 			continue;
 

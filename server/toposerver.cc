@@ -43,87 +43,87 @@ void read_points_from_json(json& data, Points& points)
     }
 }
 
-json simple_ph()
-{
-    // build filtration
-    Filtration* f = new FixedFiltration();
-    f->build_filtration();
+//json simple_ph()
+//{
+    //// build filtration
+    //Filtration* f = new FixedFiltration();
+    //f->build_filtration();
 
-    std::set<int> selection = {1,2,3};
+    //std::set<int> selection = {1,2,3};
 
-    Filtration* selectedComplex = new FixedFiltration();
-    Filtration* unselectedComplex = new FixedFiltration();
-    Filtration* blowupComplex = new FixedFiltration();
+    //Filtration* selectedComplex = new FixedFiltration();
+    //Filtration* unselectedComplex = new FixedFiltration();
+    //Filtration* blowupComplex = new FixedFiltration();
 
-    f->binarySplit(selection, selectedComplex, unselectedComplex, blowupComplex);
-    selectedComplex->print();
-    unselectedComplex->print();
-    blowupComplex->print();
+    //f->binarySplit(selection, selectedComplex, unselectedComplex, blowupComplex);
+    //selectedComplex->print();
+    //unselectedComplex->print();
+    //blowupComplex->print();
 
-    // calculate ph
-    PersistentHomology ph(f);
+    //// calculate ph
+    //PersistentHomology ph(f);
 
-    std::vector<PHCycle> reduction;
+    //std::vector<PHCycle> reduction;
 
-    ph.compute_matrix(reduction);
+    //ph.compute_matrix(reduction);
 
-	PersistenceDiagram *pd = ph.compute_persistence(reduction);
+	//PersistenceDiagram *pd = ph.compute_persistence(reduction);
 
-    pd->sort_pairs_by_persistence();
+    //pd->sort_pairs_by_persistence();
 
-    std::stringstream result;
-	for(unsigned i = 0; i < pd->num_pairs(); i++)  {
-		PersistentPair pairing = pd->get_pair(i);
-		//printf("%u %.7f %.7f\n", pairing.dim(), pairing.birth_time(), pairing.death_time());
-        result << pairing.dim() << " "
-            << pairing.birth_time() << " "
-            << pairing.death_time() << "\n";
-	}
+    //std::stringstream result;
+	//for(unsigned i = 0; i < pd->num_pairs(); i++)  {
+		//PersistentPair pairing = pd->get_pair(i);
+		////printf("%u %.7f %.7f\n", pairing.dim(), pairing.birth_time(), pairing.death_time());
+        //result << pairing.dim() << " "
+            //<< pairing.birth_time() << " "
+            //<< pairing.death_time() << "\n";
+	//}
 
-    delete pd;
-    return result.str();
-}
+    //delete pd;
+    //return result.str();
+//}
 
-json persistence_homology(json data)
-{
-	Points points;
-	read_points_from_json(data, points);
+//json persistence_homology(json data)
+//{
+	//Points points;
+	//read_points_from_json(data, points);
 
-	int max_d = 2;
+	//int max_d = 2;
 
-    Filtration* full_filtration = new RipsFiltration(points, max_d);
-    PersistentHomology ph(full_filtration);
-    //Filtration* sparse_filtration = new SparseRipsFiltration(points, max_d, 1.0/3);
-    //PersistentHomology ph(sparse_filtration);
+    //Filtration* full_filtration = new RipsFiltration(points, max_d);
+    //PersistentHomology ph(full_filtration);
+    ////Filtration* sparse_filtration = new SparseRipsFiltration(points, max_d, 1.0/3);
+    ////PersistentHomology ph(sparse_filtration);
 
-    std::vector<PHCycle> reduction;
+    //std::vector<PHCycle> reduction;
 
-    string sel_id = data["sel_id"];
-    string filename = sel_id + "_reduction.txt";
+    //string sel_id = data["sel_id"];
+    //string filename = sel_id + "_reduction.txt";
 
-    // load serialized vector
-    {
-        std::ifstream ifs(filename);
-        boost::archive::text_iarchive ia(ifs);
-        ia & reduction;
-    }
+    //// load serialized vector
+    //{
+        //std::ifstream ifs(filename);
+        //boost::archive::text_iarchive ia(ifs);
+        //ia & reduction;
+    //}
 
-	PersistenceDiagram *rips_pd = ph.compute_persistence(reduction);
+	//PersistenceDiagram *rips_pd = ph.compute_persistence(reduction);
 
-	rips_pd->sort_pairs_by_persistence();
+	//rips_pd->sort_pairs_by_persistence();
 
-    std::stringstream result;
-	for(unsigned i = 0; i < rips_pd->num_pairs(); i++)  {
-		PersistentPair pairing = rips_pd->get_pair(i);
-		//printf("%u %.7f %.7f\n", pairing.dim(), pairing.birth_time(), pairing.death_time());
-        result << pairing.dim() << " "
-            << pairing.birth_time() << " "
-            << pairing.death_time() << "\n";
-	}
+    //std::stringstream result;
+	//for(unsigned i = 0; i < rips_pd->num_pairs(); i++)  {
+		//PersistentPair pairing = rips_pd->get_pair(i);
+		////printf("%u %.7f %.7f\n", pairing.dim(), pairing.birth_time(), pairing.death_time());
+        //result << pairing.dim() << " "
+            //<< pairing.birth_time() << " "
+            //<< pairing.death_time() << "\n";
+	//}
 
-    delete rips_pd;
-    return result.str();
-}
+    //delete rips_pd;
+    //return result.str();
+//}
 
 json compute_reduction_matrix(json data)
 {
@@ -135,32 +135,31 @@ json compute_reduction_matrix(json data)
     //Filtration* full_filtration = new RipsFiltration(points, max_d);
     //PersistentHomology ph(full_filtration);
     Filtration* sparse_filtration = new SparseRipsFiltration(points, max_d, 1.0/3);
-    PersistentHomology ph(sparse_filtration);
+    sparse_filtration->build_filtration();
+    std::vector<Simplex> sc = sparse_filtration->get_complex();
 
-    std::vector<PHCycle> reduction;
+    std::vector<PHCycle> reduction = PersistentHomology::compute_matrix(sc);
 
-    ph.compute_matrix(reduction);
+    //string sel_id = data["sel_id"];
+    //string filename = sel_id + "_reduction_basis.txt";
 
-    string sel_id = data["sel_id"];
-    string filename = sel_id + "_reduction_basis.txt";
+    //// serialize vector
+    //{
+        //std::ofstream ofs(filename);
+        //boost::archive::text_oarchive oa(ofs);
+        //oa & reduction;
+    //}
 
-    // serialize vector
-    {
-        std::ofstream ofs(filename);
-        boost::archive::text_oarchive oa(ofs);
-        oa & reduction;
-    }
+    //std::vector<PHCycle> new_reduction;
 
-    std::vector<PHCycle> new_reduction;
+    //// load serialized vector
+    //{
+        //std::ifstream ifs(filename);
+        //boost::archive::text_iarchive ia(ifs);
+        //ia & new_reduction;
+    //}
 
-    // load serialized vector
-    {
-        std::ifstream ifs(filename);
-        boost::archive::text_iarchive ia(ifs);
-        ia & new_reduction;
-    }
-
-	PersistenceDiagram *sparse_rips_pd = ph.compute_persistence(new_reduction);
+	PersistenceDiagram *sparse_rips_pd = PersistentHomology::compute_persistence(reduction, sc);
 
 	sparse_rips_pd->sort_pairs_by_persistence();
 

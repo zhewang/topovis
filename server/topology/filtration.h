@@ -6,6 +6,7 @@
 #include <set>
 #include <vector>
 
+
 class Filtration  {
 	public:
 		Filtration(int _maxD);
@@ -13,6 +14,7 @@ class Filtration  {
 
 		Simplex get_simplex(int _t)  { return all_simplices[_t]; }
 		int filtration_size()  { return all_simplices.size(); }
+        std::vector<Simplex> get_complex() { return all_simplices; };
 
 		int maxD()  { return max_d; }
 
