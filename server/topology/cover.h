@@ -12,8 +12,8 @@ class Cover {
 	public:
 		Cover(Filtration *filtration, std::map<int,int> &labels);
 
-        std::vector< std::vector<Simplex> > subComplexes;
-        std::map<std::string, std::vector<Simplex> > blowupComplexes;
+        std::vector<Complex> subComplexes;
+        std::map<std::string, Complex> blowupComplexes;
 };
 
 #endif

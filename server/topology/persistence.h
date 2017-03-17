@@ -22,8 +22,8 @@ class PersistentHomology  {
 		~PersistentHomology();
 
         //bool compute_matrix(std::vector<PHCycle> &reduction);
-        static std::vector<PHCycle> compute_matrix( std::vector<Simplex> &sc );
-        static PersistenceDiagram* compute_persistence(std::vector<PHCycle> &reduction, std::vector<Simplex> &sc);
+        static std::vector<PHCycle> compute_matrix( Complex &sc );
+        static PersistenceDiagram* compute_persistence(std::vector<PHCycle> &reduction, Complex &sc);
 
         // TODO
         // static std::vector<PHCycle> compute_matrix( Cover &cover );

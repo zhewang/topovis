@@ -136,7 +136,7 @@ json compute_reduction_matrix(json data)
     //PersistentHomology ph(full_filtration);
     Filtration* sparse_filtration = new SparseRipsFiltration(points, max_d, 1.0/3);
     sparse_filtration->build_filtration();
-    std::vector<Simplex> sc = sparse_filtration->get_complex();
+    Complex sc = sparse_filtration->get_complex();
 
     std::vector<PHCycle> reduction = PersistentHomology::compute_matrix(sc);
 
