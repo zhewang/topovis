@@ -21,7 +21,7 @@ PersistentHomology::~PersistentHomology()  {
 bool PersistentHomology::compute_matrix(std::vector<PHCycle> &reduction)  {
 	int filtration_size = filtration->filtration_size();
 
-	// construct mapping between simplices and their identifiers -> only necessary for identifying simplex faces
+	// construct mapping between simplices and their IDs
 	std::map<std::string,int> simplex_mapping;
 	for(int i = 0; i < filtration_size; i++)
 		simplex_mapping[filtration->get_simplex(i).unique_unoriented_id()] = i+1;
@@ -30,20 +30,15 @@ bool PersistentHomology::compute_matrix(std::vector<PHCycle> &reduction)  {
     reduction.clear();
     reduction.resize(filtration_size+1);
 
-	// initialize chains to identities
-    std::vector<PHCycle> chains(filtration_size+1);
-
 	// reserve 1st entry as dummy simplex, in line with reduced persistence
 	reduction[0] = PHCycle();
-	chains[0] = PHCycle();
-	chains[0].push_back(0);
+
 	// for each simplex, take its boundary and assign those simplices to its list
 	for(int i = 0; i < filtration_size; i++)  {
 		int idx = i+1;
 		reduction[idx] = PHCycle();
-		chains[idx] = PHCycle();
-		chains[idx].push_back(idx);
 		Simplex simplex = filtration->get_simplex(i);
+
 		// if 0-simplex, then reserve face as dummy simplex
 		if(simplex.dim()==0)  {
 			reduction[idx].push_back(0);
@@ -59,9 +54,10 @@ bool PersistentHomology::compute_matrix(std::vector<PHCycle> &reduction)  {
 		// sort list, so we can efficiently add cycles and inspect death cycles
 		reduction[idx].sort();
 	}
-	simplex_mapping.clear();
 
-	std::cout << "doing the pairing..." << std::endl;
+    // reduce the boundary matrix
+
+	std::cout << "doing reduction..." << std::endl;
 	ComputationTimer persistence_timer("persistence computation time");
 	persistence_timer.start();
 
@@ -103,9 +99,6 @@ bool PersistentHomology::compute_matrix(std::vector<PHCycle> &reduction)  {
                     ++added_cycle_iter;
                 }
             }
-            //if(retain_generators && d != max_d)
-            //chains[idx].push_back(death_cycle_ind);
-
             low_i = reduction[idx].back();
         }
 
