@@ -132,17 +132,17 @@ json compute_reduction_matrix(json data)
 
 	int max_d = 2;
 
-    Filtration* full_filtration = new RipsFiltration(points, max_d);
-    PersistentHomology ph(full_filtration);
-    //Filtration* sparse_filtration = new SparseRipsFiltration(points, max_d, 1.0/3);
-    //PersistentHomology ph(sparse_filtration);
+    //Filtration* full_filtration = new RipsFiltration(points, max_d);
+    //PersistentHomology ph(full_filtration);
+    Filtration* sparse_filtration = new SparseRipsFiltration(points, max_d, 1.0/3);
+    PersistentHomology ph(sparse_filtration);
 
     std::vector<PHCycle> reduction;
 
     ph.compute_matrix(reduction);
 
     string sel_id = data["sel_id"];
-    string filename = sel_id + "_reduction.txt";
+    string filename = sel_id + "_reduction_basis.txt";
 
     // serialize vector
     {
@@ -180,8 +180,9 @@ json compute_reduction_matrix(json data)
 static void handle_query_call(struct mg_connection *c, struct http_message *hm) {
 
   json q = json::parse(string(hm->body.p, hm->body.len));
+  json result = compute_reduction_matrix(q);
   //json result = persistence_homology(q);
-  json result = simple_ph();
+  //json result = simple_ph();
 
   /* Send result */
   std::string msg_content = result.dump();
