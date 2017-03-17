@@ -14,4 +14,7 @@ include_directories(${persistence_SOURCE_DIR})
 add_executable(toposerver toposerver.cc mongoose.c)
 target_link_libraries( toposerver topology geometry ANN ${Boost_LIBRARIES} )
 
+add_executable(test test.cc)
+target_link_libraries( test topology geometry ANN ${Boost_LIBRARIES} )
+
 subdirs(geometry topology)
