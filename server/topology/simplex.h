@@ -17,9 +17,8 @@ class Simplex  {
 
 		int dim() const { return simplex.size()-1; }
 		int vertex(int _i) const { return simplex[_i]; }
-		double get_simplex_distance() const  {
-			return cached_distance;
-		}
+		int min_vertex() const { return *std::min_element(simplex.begin(), simplex.end()); }
+		double get_simplex_distance() const { return cached_distance; }
 
 		MetricSpace* get_metric_space() { return this->metric_space; }
 
@@ -32,7 +31,7 @@ class Simplex  {
 			}
 		}
 
-		std::string unique_unoriented_id() const  {
+		std::string id() const  {
 			std::vector<int> sorted_simplex = simplex;
 			std::sort(sorted_simplex.begin(),sorted_simplex.end());
 			char unique_id[10*(sorted_simplex.size()+1)];

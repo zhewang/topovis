@@ -12,7 +12,7 @@ std::vector<PHCycle> PersistentHomology::compute_matrix( std::vector<Simplex> &s
 	// construct mapping between simplices and their IDs
 	std::map<std::string,int> simplex_mapping;
 	for(int i = 0; i < filtration_size; i++)
-		simplex_mapping[sc[i].unique_unoriented_id()] = i+1;
+		simplex_mapping[sc[i].id()] = i+1;
 
 	// initialize reduction to boundaries - just a vector of lists
     std::vector<PHCycle> reduction;
@@ -37,7 +37,7 @@ std::vector<PHCycle> PersistentHomology::compute_matrix( std::vector<Simplex> &s
 		std::vector<Simplex> faces = simplex.faces();
 		for(int f = 0; f < faces.size(); f++)  {
 			Simplex next_face = faces[f];
-			int face_id = simplex_mapping[next_face.unique_unoriented_id()];
+			int face_id = simplex_mapping[next_face.id()];
 			reduction[idx].push_back(face_id);
 		}
 		// sort list, so we can efficiently add cycles and inspect death cycles

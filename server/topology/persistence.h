@@ -25,7 +25,7 @@ class PersistentHomology  {
         static std::vector<PHCycle> compute_matrix( Complex &sc );
         static PersistenceDiagram* compute_persistence(std::vector<PHCycle> &reduction, Complex &sc);
 
-        // TODO
+        // TODO test, result from the whole complex should be the same from the cover with blowup complex
         // static std::vector<PHCycle> compute_matrix( Cover &cover );
 };
 

@@ -49,11 +49,11 @@ bool FPSRipsFiltration::build_filtration()  {
 
 	std::set<std::string> sparse_simplex_ids;
 	for(unsigned i = 0; i < all_simplices.size(); i++)
-		sparse_simplex_ids.insert(all_simplices[i].unique_unoriented_id());
+		sparse_simplex_ids.insert(all_simplices[i].id());
 
 	for(unsigned idx = 0; idx < full_filtration.size(); idx++)  {
 		Simplex simplex = full_filtration[idx];
-		std::string simplex_id = simplex.unique_unoriented_id();
+		std::string simplex_id = simplex.id();
 
 		bool exceeds_deletion_time = false;
 		for(unsigned i = 0; i <= simplex.dim(); i++)  {
