@@ -6,13 +6,13 @@ PersistentHomology::PersistentHomology()  {
 PersistentHomology::~PersistentHomology()  {
 }
 
-std::vector<PHCycle> PersistentHomology::compute_matrix( std::vector<Simplex> &sc ) {
-	int filtration_size = sc.size();
+std::vector<PHCycle> PersistentHomology::compute_matrix( SimplicialComplex &sc ) {
+	int filtration_size = sc.allSimplicis.size();
 
 	// construct mapping between simplices and their IDs
 	std::map<std::string,int> simplex_mapping;
 	for(int i = 0; i < filtration_size; i++)
-		simplex_mapping[sc[i].id()] = i+1;
+		simplex_mapping[sc.allSimplicis[i].id()] = i+1;
 
 	// initialize reduction to boundaries - just a vector of lists
     std::vector<PHCycle> reduction;
@@ -26,7 +26,7 @@ std::vector<PHCycle> PersistentHomology::compute_matrix( std::vector<Simplex> &s
 	for(int i = 0; i < filtration_size; i++)  {
 		int idx = i+1;
 		reduction[idx] = PHCycle();
-		Simplex simplex = sc[i];
+		Simplex simplex = sc.allSimplicis[i];
 
 		// if 0-simplex, then reserve face as dummy simplex
 		if(simplex.dim()==0)  {
@@ -104,9 +104,10 @@ std::vector<PHCycle> PersistentHomology::compute_matrix( std::vector<Simplex> &s
     return reduction;
 }
 
-PersistenceDiagram* PersistentHomology::compute_persistence(std::vector<PHCycle> &reduction, std::vector<Simplex> &sc) {
+PersistenceDiagram* PersistentHomology::compute_persistence
+(std::vector<PHCycle> &reduction, SimplicialComplex &sc) {
 
-	int filtration_size = sc.size();
+	int filtration_size = sc.allSimplicis.size();
 
 	std::vector< std::pair<int,int> > persistence_pairing;
 
@@ -126,7 +127,7 @@ PersistenceDiagram* PersistentHomology::compute_persistence(std::vector<PHCycle>
 	std::vector<PersistentPair> persistent_pairs;
 	for(int i = 0; i < persistence_pairing.size(); i++)  {
 		std::pair<int,int> pairing = persistence_pairing[i];
-		Simplex birth_simplex = sc[pairing.first], death_simplex = sc[pairing.second];
+		Simplex birth_simplex = sc.allSimplicis[pairing.first], death_simplex = sc.allSimplicis[pairing.second];
 		if(death_simplex.get_simplex_distance() == birth_simplex.get_simplex_distance())
 			continue;
 

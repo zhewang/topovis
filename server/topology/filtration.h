@@ -3,11 +3,11 @@
 
 #include "../geometry/point_incs.h"
 #include "simplex.h"
+#include "simplicial_complex.h"
 
 #include <set>
 #include <vector>
 
-typedef std::vector<Simplex> Complex;
 
 class Filtration  {
 	public:
@@ -16,7 +16,7 @@ class Filtration  {
 
 		Simplex get_simplex(int _t)  { return all_simplices[_t]; }
 		int filtration_size()  { return all_simplices.size(); }
-        Complex get_complex() { return all_simplices; };
+        SimplicialComplex get_complex();
 
 		int maxD()  { return max_d; }
 

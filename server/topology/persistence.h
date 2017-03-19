@@ -7,6 +7,7 @@
 #include "sparse_rips_filtration.h"
 #include "rips_filtration.h"
 #include "cover.h"
+#include "simplicial_complex.h"
 
 #include "ComputationTimer.h"
 
@@ -22,8 +23,8 @@ class PersistentHomology  {
 		~PersistentHomology();
 
         //bool compute_matrix(std::vector<PHCycle> &reduction);
-        static std::vector<PHCycle> compute_matrix( Complex &sc );
-        static PersistenceDiagram* compute_persistence(std::vector<PHCycle> &reduction, Complex &sc);
+        static std::vector<PHCycle> compute_matrix( SimplicialComplex &sc );
+        static PersistenceDiagram* compute_persistence(std::vector<PHCycle> &reduction, SimplicialComplex &sc);
 
         // TODO test, result from the whole complex should be the same from the cover with blowup complex
         // static std::vector<PHCycle> compute_matrix( Cover &cover );

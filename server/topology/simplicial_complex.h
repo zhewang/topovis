@@ -14,6 +14,7 @@ class SimplicialComplex {
 
         std::map<std::string, int> get_simplex_map();
 
+        // public members
         std::vector<Simplex> allSimplicis;
 };
 

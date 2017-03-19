@@ -20,11 +20,13 @@
 #include "mongoose.h"
 #include "json.hpp"
 
-#include "topology/persistence.h"
 #include "geometry/covertree.h"
+
+#include "topology/persistence.h"
 #include "topology/sparse_rips_filtration.h"
 #include "topology/rips_filtration.h"
 #include "topology/fixed_filtration.h"
+#include "topology/simplicial_complex.h"
 
 using json = nlohmann::json;
 
@@ -135,8 +137,11 @@ json compute_reduction_matrix(json data)
     //Filtration* full_filtration = new RipsFiltration(points, max_d);
     //PersistentHomology ph(full_filtration);
     Filtration* sparse_filtration = new SparseRipsFiltration(points, max_d, 1.0/3);
+
+    // TODO build_filtration return a simplicial complex
+    // and persistenthomology use this complex to calculate ph
     sparse_filtration->build_filtration();
-    Complex sc = sparse_filtration->get_complex();
+    SimplicialComplex sc = sparse_filtration->get_complex();
 
     std::vector<PHCycle> reduction = PersistentHomology::compute_matrix(sc);
 
