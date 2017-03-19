@@ -16,7 +16,7 @@ Cover::Cover(SimplicialComplex &sc, std::map<int,int> &vertex_map) {
     std::map<std::string, int> simplex_order = sc.get_simplex_map();
 
     for(auto it = subcomplex_map.begin(); it != subcomplex_map.end(); it ++) {
-        subComplexes[it->first] = SimplicialComplex(it->second, simplex_order);
+        subComplexes[it->first] = SimplicialComplex(it->second, true);
     }
 
 }

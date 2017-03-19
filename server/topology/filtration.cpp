@@ -16,9 +16,7 @@ SimplicialComplex Filtration::get_complex() {
     if(this->all_simplices.size() == 0) {
         this->build_filtration();
     }
-    SimplicialComplex sc;
-    sc.allSimplicis = this->all_simplices;
-    return sc;
+    return SimplicialComplex(this->all_simplices);
 }
 
 bool Filtration::binarySplit(

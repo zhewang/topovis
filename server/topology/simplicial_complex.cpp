@@ -16,21 +16,26 @@ SimplicialComplex::SimplicialComplex() {
 
 }
 
-SimplicialComplex::SimplicialComplex(std::vector<Simplex> &faces, std::map<std::string, int> simplex_order) {
-    std::set<Simplex> face_set(faces.begin(), faces.end());
+SimplicialComplex::SimplicialComplex
+(std::vector<Simplex> &faces, bool from_faces) {
+    if(from_faces) {
+        std::set<Simplex> face_set(faces.begin(), faces.end());
 
-    for(auto it = faces.begin(); it != faces.end(); it ++) {
-        if(it->dim() > 0) {
-            std::vector<Simplex> face_to_add = it->faces();
-            for(auto it_inner = face_to_add.begin(); it_inner != face_to_add.end(); it_inner ++) {
-                face_set.insert(*it_inner);
+        for(auto it = faces.begin(); it != faces.end(); it ++) {
+            if(it->dim() > 0) {
+                std::vector<Simplex> face_to_add = it->faces();
+                for(auto it_inner = face_to_add.begin();
+                    it_inner != face_to_add.end(); it_inner ++) {
+                    face_set.insert(*it_inner);
+                }
             }
         }
+
+        allSimplicis = std::vector<Simplex>(face_set.begin(), face_set.end());
+        std::sort(allSimplicis.begin(), allSimplicis.end());
+    } else {
+        allSimplicis = faces;
     }
-
-    allSimplicis = std::vector<Simplex>(face_set.begin(), face_set.end());
-
-    std::sort(allSimplicis.begin(), allSimplicis.end());
 }
 
 std::map<std::string, int> SimplicialComplex::get_simplex_map() {
