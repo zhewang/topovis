@@ -12,8 +12,12 @@ class Cover {
         Cover();
 		Cover(SimplicialComplex &sc, std::map<int,int> &vertex_map);
 
+        int subComplexSize() const { return this->IDs.size(); }
+
+        /*************** Members ****************/
         std::map<std::string, SimplicialComplex> subComplexes;
-        std::map<std::string, SimplicialComplex> blowupComplexes;
+        SimplicialComplex blowupComplex;
+        std::vector<std::string> IDs;
 
         // we need this to preserve the order of simplices in subComplexes
         std::map<std::string, int> SimplexIDMap;

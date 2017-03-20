@@ -1,6 +1,9 @@
 #include "cover.h"
 #include "string"
 
+Cover::Cover() {
+}
+
 Cover::Cover(SimplicialComplex &sc, std::map<int,int> &vertex_map) {
     std::map<std::string, std::vector<Simplex> > subcomplex_map;
 
@@ -8,6 +11,7 @@ Cover::Cover(SimplicialComplex &sc, std::map<int,int> &vertex_map) {
         std::string dest = std::to_string(it->min_vertex());
 
         if(subcomplex_map.find(dest) == subcomplex_map.end()) {
+            this->IDs.push_back(dest);
             subcomplex_map[dest] = std::vector<Simplex>();
         }
         subcomplex_map[dest].push_back(*it);
@@ -18,5 +22,7 @@ Cover::Cover(SimplicialComplex &sc, std::map<int,int> &vertex_map) {
     for(auto it = subcomplex_map.begin(); it != subcomplex_map.end(); it ++) {
         subComplexes[it->first] = SimplicialComplex(it->second, true);
     }
+
+    // TODO calculate blowup complex
 
 }

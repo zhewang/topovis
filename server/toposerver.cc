@@ -143,7 +143,7 @@ json compute_reduction_matrix(json data)
     sparse_filtration->build_filtration();
     SimplicialComplex sc = sparse_filtration->get_complex();
 
-    std::vector<PHCycle> reduction = PersistentHomology::compute_matrix(sc);
+    BoundaryMatrix reduction = PersistentHomology::compute_matrix(sc);
 
     //string sel_id = data["sel_id"];
     //string filename = sel_id + "_reduction_basis.txt";
@@ -164,7 +164,8 @@ json compute_reduction_matrix(json data)
         //ia & new_reduction;
     //}
 
-	PersistenceDiagram *sparse_rips_pd = PersistentHomology::compute_persistence(reduction, sc);
+	PersistenceDiagram *sparse_rips_pd =
+        PersistentHomology::read_persistence_diagram(reduction, sc);
 
 	sparse_rips_pd->sort_pairs_by_persistence();
 

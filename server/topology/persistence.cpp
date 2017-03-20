@@ -1,12 +1,23 @@
 #include "persistence.h"
 
+BoundaryMatrix::BoundaryMatrix() {
+}
+
+BoundaryMatrix::~BoundaryMatrix() {
+}
+
+BoundaryMatrix::BoundaryMatrix(std::vector<int> &_h, std::vector< std::list<int> > &_d) {
+    this->header = _h;
+    this->data = _d;
+}
+
 PersistentHomology::PersistentHomology()  {
 }
 
 PersistentHomology::~PersistentHomology()  {
 }
 
-std::vector<PHCycle> PersistentHomology::compute_matrix( SimplicialComplex &sc ) {
+BoundaryMatrix PersistentHomology::compute_matrix(const SimplicialComplex &sc ) {
 	int filtration_size = sc.allSimplicis.size();
 
 	// construct mapping between simplices and their IDs
@@ -15,17 +26,20 @@ std::vector<PHCycle> PersistentHomology::compute_matrix( SimplicialComplex &sc )
 		simplex_mapping[sc.allSimplicis[i].id()] = i+1;
 
 	// initialize reduction to boundaries - just a vector of lists
+    std::vector<int> header;
     std::vector<PHCycle> reduction;
     reduction.clear();
     reduction.resize(filtration_size+1);
 
 	// reserve 1st entry as dummy simplex, in line with reduced persistence
 	reduction[0] = PHCycle();
+    header.push_back(0);
 
 	// for each simplex, take its boundary and assign those simplices to its list
 	for(int i = 0; i < filtration_size; i++)  {
 		int idx = i+1;
 		reduction[idx] = PHCycle();
+        header.push_back(idx);
 		Simplex simplex = sc.allSimplicis[i];
 
 		// if 0-simplex, then reserve face as dummy simplex
@@ -101,11 +115,22 @@ std::vector<PHCycle> PersistentHomology::compute_matrix( SimplicialComplex &sc )
 	persistence_timer.end();
 	persistence_timer.dump_time();
 
-    return reduction;
+    return BoundaryMatrix(header, reduction);
 }
 
-PersistenceDiagram* PersistentHomology::compute_persistence
-(std::vector<PHCycle> &reduction, SimplicialComplex &sc) {
+BoundaryMatrix PersistentHomology::compute_matrix( Cover &cover ) {
+    std::vector<BoundaryMatrix> rm_vec; // reduced matrices vector
+    for(int i = 0; i < cover.subComplexSize(); ++ i) {
+        BoundaryMatrix bm = PersistentHomology::compute_matrix(
+            cover.subComplexes[cover.IDs[i]]
+        );
+        rm_vec.push_back(bm);
+    }
+    return BoundaryMatrix();
+}
+
+PersistenceDiagram* PersistentHomology::read_persistence_diagram
+(BoundaryMatrix &reduction, SimplicialComplex &sc) {
 
 	int filtration_size = sc.allSimplicis.size();
 
