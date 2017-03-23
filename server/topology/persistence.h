@@ -43,6 +43,8 @@ class PersistentHomology  {
         // TODO calculate reduced matrix given a simplex mapping
         static BoundaryMatrix compute_matrix( Cover &cover );
 
+        static void reduce_matrix(BoundaryMatrix &bm);
+
         static PersistenceDiagram* read_persistence_diagram(BoundaryMatrix &reduction, SimplicialComplex &sc);
 
 };

@@ -71,11 +71,21 @@ BoundaryMatrix PersistentHomology::compute_matrix(
 		reduction[idx].sort();
 	}
 
-    // reduce the boundary matrix
+    BoundaryMatrix bm(header, reduction);
 
+    // reduce the boundary matrix
+    reduce_matrix(bm);
+
+    return bm;
+}
+
+void PersistentHomology::reduce_matrix(BoundaryMatrix &bm) {
 	std::cout << "doing reduction..." << std::endl;
 	ComputationTimer persistence_timer("persistence computation time");
 	persistence_timer.start();
+
+    int filtration_size = bm.data.size()-1; // minus the empty simplex
+    std::vector< std::list<int> > &reduction = bm.data;
 
 	// initialize death cycle reference - nothing there yet, so just give it all -1
     std::vector<int> death_cycle_ref(filtration_size+1);
@@ -127,19 +137,22 @@ BoundaryMatrix PersistentHomology::compute_matrix(
 
 	persistence_timer.end();
 	persistence_timer.dump_time();
-
-    return BoundaryMatrix(header, reduction);
 }
 
 BoundaryMatrix PersistentHomology::compute_matrix( Cover &cover ) {
     std::vector<BoundaryMatrix> rm_vec; // reduced matrices vector
     for(int i = 0; i < cover.subComplexSize(); ++ i) {
         BoundaryMatrix bm = PersistentHomology::compute_matrix(
-            cover.subComplexes[cover.IDs[i]]
+            cover.subComplexes[cover.IDs[i]],
+            cover.SimplexIDMap
         );
         rm_vec.push_back(bm);
     }
     // TODO glue them together
+    // Assumption: each subcomplex is already sorted
+    // 1. reorder each column
+    // 2. reduce the new matrix
+
     return BoundaryMatrix();
 }
 
