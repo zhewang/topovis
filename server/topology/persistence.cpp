@@ -17,13 +17,25 @@ PersistentHomology::PersistentHomology()  {
 PersistentHomology::~PersistentHomology()  {
 }
 
-BoundaryMatrix PersistentHomology::compute_matrix(const SimplicialComplex &sc ) {
+BoundaryMatrix PersistentHomology::compute_matrix(const SimplicialComplex &sc) {
+    std::map<std::string, int> mapping;
+    return PersistentHomology::compute_matrix(sc, mapping);
+}
+
+BoundaryMatrix PersistentHomology::compute_matrix(
+    const SimplicialComplex &sc,
+    std::map<std::string, int> &simplex_mapping
+){
 	int filtration_size = sc.allSimplicis.size();
 
 	// construct mapping between simplices and their IDs
-	std::map<std::string,int> simplex_mapping;
-	for(int i = 0; i < filtration_size; i++)
-		simplex_mapping[sc.allSimplicis[i].id()] = i+1;
+
+    // if simplex_mapping is empty, it means this is not a subcomplex. Then we
+    // just build the mapping for the whole complex.
+    if(simplex_mapping.size() == 0) {
+        for(int i = 0; i < filtration_size; i++)
+            simplex_mapping[sc.allSimplicis[i].id()] = i+1;
+    }
 
 	// initialize reduction to boundaries - just a vector of lists
     std::vector<int> header;
@@ -39,8 +51,9 @@ BoundaryMatrix PersistentHomology::compute_matrix(const SimplicialComplex &sc ) 
 	for(int i = 0; i < filtration_size; i++)  {
 		int idx = i+1;
 		reduction[idx] = PHCycle();
-        header.push_back(idx);
 		Simplex simplex = sc.allSimplicis[i];
+
+        header.push_back(simplex_mapping[simplex.id()]);
 
 		// if 0-simplex, then reserve face as dummy simplex
 		if(simplex.dim()==0)  {
@@ -126,6 +139,7 @@ BoundaryMatrix PersistentHomology::compute_matrix( Cover &cover ) {
         );
         rm_vec.push_back(bm);
     }
+    // TODO glue them together
     return BoundaryMatrix();
 }
 

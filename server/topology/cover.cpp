@@ -5,6 +5,10 @@ Cover::Cover() {
 }
 
 Cover::Cover(SimplicialComplex &sc, std::map<int,int> &vertex_map) {
+    // Get the simplex ID mapping
+    this->SimplexIDMap = sc.get_simplex_map();
+
+    // Calculate sub-complexes
     std::map<std::string, std::vector<Simplex> > subcomplex_map;
 
     for(auto it = sc.allSimplicis.begin(); it != sc.allSimplicis.end(); it ++) {

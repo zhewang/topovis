@@ -16,7 +16,6 @@
 #include <vector>
 
 typedef std::list<int> PHCycle;
-// TODO we need a new reduced matrix struct which has header info
 
 struct BoundaryMatrix {
     BoundaryMatrix();
@@ -37,8 +36,11 @@ class PersistentHomology  {
 		~PersistentHomology();
 
         static BoundaryMatrix compute_matrix(const SimplicialComplex &sc );
+        static BoundaryMatrix compute_matrix(
+            const SimplicialComplex &sc,
+            std::map<std::string, int> &simplex_mapping
+        );
         // TODO calculate reduced matrix given a simplex mapping
-        //static std::vector<PHCycle> compute_matrix( SimplicialComplex &sc, std::map<std::string, int> simplex_mapping );
         static BoundaryMatrix compute_matrix( Cover &cover );
 
         static PersistenceDiagram* read_persistence_diagram(BoundaryMatrix &reduction, SimplicialComplex &sc);

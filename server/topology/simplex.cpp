@@ -1,11 +1,23 @@
 #include "simplex.h"
 
+Simplex::Simplex()  {
+	metric_space = NULL;
+	cached_distance = 0;
+    uid = "null";
+}
+
 Simplex::Simplex(const std::vector<int> & _simplex, MetricSpace* _metricSpace)  {
 	simplex = _simplex;
 	std::sort(simplex.begin(), simplex.end());
 
 	metric_space = _metricSpace;
 	cached_distance = 0;
+
+    char unique_id[10*(simplex.size()+1)];
+    sprintf(unique_id, "%u", simplex[0]);
+    for(unsigned i = 1; i < simplex.size(); i++)
+        sprintf(unique_id, "%s-%u", unique_id, simplex[i]);
+    uid = std::string(unique_id);
 }
 
 Simplex::~Simplex()  {

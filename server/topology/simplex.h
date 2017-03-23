@@ -11,7 +11,7 @@
 
 class Simplex  {
 	public:
-		Simplex()  {}
+		Simplex();
 		Simplex(const std::vector<int> & _simplex, MetricSpace* _metricSpace);
 		~Simplex();
 
@@ -31,14 +31,8 @@ class Simplex  {
 			}
 		}
 
-		std::string id() const  {
-			std::vector<int> sorted_simplex = simplex;
-			std::sort(sorted_simplex.begin(),sorted_simplex.end());
-			char unique_id[10*(sorted_simplex.size()+1)];
-			sprintf(unique_id, "%u", sorted_simplex[0]);
-			for(unsigned i = 1; i < sorted_simplex.size(); i++)
-				sprintf(unique_id, "%s-%u", unique_id, sorted_simplex[i]);
-			return unique_id;
+		std::string id() const {
+			return uid;
 		}
 
 		std::vector<Simplex> faces();
@@ -86,6 +80,7 @@ class Simplex  {
 		std::vector<int> simplex;
 		MetricSpace* metric_space;
 		double cached_distance;
+        std::string uid;
 };
 
 #endif
