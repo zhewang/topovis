@@ -12,7 +12,7 @@ Cover::Cover(SimplicialComplex &sc, std::map<int,int> &vertex_map) {
     std::map<std::string, std::vector<Simplex> > subcomplex_map;
 
     for(auto it = sc.allSimplicis.begin(); it != sc.allSimplicis.end(); it ++) {
-        std::string dest = std::to_string(it->min_vertex());
+        std::string dest = std::to_string(vertex_map[it->min_vertex()]);
 
         if(subcomplex_map.find(dest) == subcomplex_map.end()) {
             this->IDs.push_back(dest);

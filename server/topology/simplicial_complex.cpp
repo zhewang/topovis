@@ -45,3 +45,12 @@ std::map<std::string, int> SimplicialComplex::get_simplex_map() {
     }
     return map;
 }
+
+void SimplicialComplex::print() {
+    std::cout << "{ ";
+    for(int i = 0; i < this->allSimplicis.size(); i ++) {
+        if(i > 0) { std::cout << ", "; }
+        std::cout << "{" << this->allSimplicis[i] << "}";
+    }
+    std::cout << " }" << std::endl;
+}

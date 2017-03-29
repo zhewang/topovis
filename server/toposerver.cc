@@ -34,7 +34,7 @@ using json = nlohmann::json;
 static const char *s_http_port = "8800";
 static struct mg_serve_http_opts s_http_server_opts;
 
-void read_points_from_json(json& data, Points& points)
+void read_points_from_json(json& data, Points& points, std::map<int, int> &vertex_map)
 {
     for(auto it = data["points"].begin(); it != data["points"].end(); it ++) {
         json t = *it;
@@ -42,6 +42,7 @@ void read_points_from_json(json& data, Points& points)
         p.push_back(t["px"]);
         p.push_back(t["py"]);
         points.push_back(Vector(p));
+        vertex_map[points.size()] = t["c"];
     }
 }
 
@@ -130,7 +131,8 @@ void read_points_from_json(json& data, Points& points)
 json compute_reduction_matrix(json data)
 {
 	Points points;
-	read_points_from_json(data, points);
+    std::map<int,int> vertex_map;
+	read_points_from_json(data, points, vertex_map);
 
 	int max_d = 2;
 
@@ -138,12 +140,14 @@ json compute_reduction_matrix(json data)
     //PersistentHomology ph(full_filtration);
     Filtration* sparse_filtration = new SparseRipsFiltration(points, max_d, 1.0/3);
 
-    // TODO build_filtration return a simplicial complex
     // and persistenthomology use this complex to calculate ph
     sparse_filtration->build_filtration();
     SimplicialComplex sc = sparse_filtration->get_complex();
-
     BoundaryMatrix reduction = PersistentHomology::compute_matrix(sc);
+
+    // build a cover
+    //Cover c(sc, vertex_map);
+    //BoundaryMatrix reduction = PersistentHomology::compute_matrix(c);
 
     //string sel_id = data["sel_id"];
     //string filename = sel_id + "_reduction_basis.txt";

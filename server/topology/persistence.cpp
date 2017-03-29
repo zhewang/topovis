@@ -140,8 +140,13 @@ void PersistentHomology::reduce_matrix(BoundaryMatrix &bm) {
 }
 
 BoundaryMatrix PersistentHomology::compute_matrix( Cover &cover ) {
+    std::cout << "calculating reduction matrix for cover\n";
+
     std::vector<BoundaryMatrix> rm_vec; // reduced matrices vector
     for(int i = 0; i < cover.subComplexSize(); ++ i) {
+        std::cout << "subcomplex: " << cover.IDs[i] << std::endl;
+        cover.subComplexes[cover.IDs[i]].print();
+
         BoundaryMatrix bm = PersistentHomology::compute_matrix(
             cover.subComplexes[cover.IDs[i]],
             cover.SimplexIDMap
@@ -152,8 +157,40 @@ BoundaryMatrix PersistentHomology::compute_matrix( Cover &cover ) {
     // Assumption: each subcomplex is already sorted
     // 1. reorder each column
     // 2. reduce the new matrix
+    // Since we only have a small number of subcomplexes, just use linear scan
+    // to merge them. Optimally, we can use a heap.
+    std::vector<int> merged_header;
+    std::vector< std::list<int> > merged_data;
+    std::vector<int> p(cover.subComplexSize(), 0); //pointers to the head of each subcomplex vector
 
-    return BoundaryMatrix();
+    while(true) {
+        int minHead = 0; // which subcomplex has the min head
+        for(int i = 1; i < cover.subComplexSize(); i ++) {
+            if(p[i] < rm_vec[i].size() &&
+               rm_vec[i].header[p[i]] < rm_vec[minHead].header[p[minHead]]) {
+                minHead = i;
+            }
+        }
+        merged_header.push_back(p[minHead]);
+        merged_data.push_back(rm_vec[minHead][p[minHead]]);
+        p[minHead] ++;
+        if(p[minHead] == rm_vec[minHead].size()) {
+            p[minHead] = -1;
+        }
+
+        int sum = 0;
+        for(auto& n : p) {
+            sum += n;
+        }
+
+        if(sum == -1*p.size()) {
+            break;
+        }
+    }
+
+    BoundaryMatrix bm(merged_header, merged_data);
+    reduce_matrix(bm);
+    return bm;
 }
 
 PersistenceDiagram* PersistentHomology::read_persistence_diagram
