@@ -63,9 +63,17 @@ class Simplex  {
 				return false;
 
 			// if they are equivalent, then lower dimensional simplices precede higher dimensional ones
-			return our_dim < other_dim;
+            if(our_dim < other_dim)
+                return true;
+            if(our_dim > other_dim)
+                return false;
 
-			// TODO: resolve equal distance, equal dim?
+			// resolve equal distance, equal dim
+            for(int i = 0; i < other_dim+1; i ++) {
+                if(this->vertex(i) < _simp.vertex(i))
+                    return true;
+            }
+            return false;
 		}
 
 		friend std::ostream& operator <<(std::ostream &out, const Simplex & _simplex)  {

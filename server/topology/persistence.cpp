@@ -11,6 +11,17 @@ BoundaryMatrix::BoundaryMatrix(std::vector<int> &_h, std::vector< std::list<int>
     this->data = _d;
 }
 
+void BoundaryMatrix::print() {
+    for(auto& col : data) {
+        for(auto& row : col) {
+            std::cout << row << " ";
+        }
+        std::cout << std::endl;
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 PersistentHomology::PersistentHomology()  {
 }
 
@@ -145,7 +156,7 @@ BoundaryMatrix PersistentHomology::compute_matrix( Cover &cover ) {
     std::vector<BoundaryMatrix> rm_vec; // reduced matrices vector
     for(int i = 0; i < cover.subComplexSize(); ++ i) {
         std::cout << "subcomplex: " << cover.IDs[i] << std::endl;
-        cover.subComplexes[cover.IDs[i]].print();
+        //cover.subComplexes[cover.IDs[i]].print();
 
         BoundaryMatrix bm = PersistentHomology::compute_matrix(
             cover.subComplexes[cover.IDs[i]],
@@ -153,6 +164,8 @@ BoundaryMatrix PersistentHomology::compute_matrix( Cover &cover ) {
         );
         rm_vec.push_back(bm);
     }
+
+    std::cout << "gluing...\n";
     // TODO glue them together
     // Assumption: each subcomplex is already sorted
     // 1. reorder each column
@@ -161,7 +174,13 @@ BoundaryMatrix PersistentHomology::compute_matrix( Cover &cover ) {
     // to merge them. Optimally, we can use a heap.
     std::vector<int> merged_header;
     std::vector< std::list<int> > merged_data;
-    std::vector<int> p(cover.subComplexSize(), 0); //pointers to the head of each subcomplex vector
+
+    // pointers to the head of each subcomplex vector
+    // start from 1 to ignore the empty simplex for now
+    std::vector<int> p(cover.subComplexSize(), 1);
+
+    merged_header.push_back(0);
+    merged_data.push_back(std::list<int>());
 
     while(true) {
         int minHead = 0; // which subcomplex has the min head
@@ -188,6 +207,7 @@ BoundaryMatrix PersistentHomology::compute_matrix( Cover &cover ) {
         }
     }
 
+    std::cout << "reducing glued matrix\n";
     BoundaryMatrix bm(merged_header, merged_data);
     reduce_matrix(bm);
     return bm;

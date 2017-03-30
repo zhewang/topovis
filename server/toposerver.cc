@@ -42,7 +42,8 @@ void read_points_from_json(json& data, Points& points, std::map<int, int> &verte
         p.push_back(t["px"]);
         p.push_back(t["py"]);
         points.push_back(Vector(p));
-        vertex_map[points.size()] = t["c"];
+        vertex_map[points.size()-1] = t["c"];
+        std::cout << points.size() << ": " << t["c"] << std::endl;
     }
 }
 
@@ -143,11 +144,11 @@ json compute_reduction_matrix(json data)
     // and persistenthomology use this complex to calculate ph
     sparse_filtration->build_filtration();
     SimplicialComplex sc = sparse_filtration->get_complex();
-    BoundaryMatrix reduction = PersistentHomology::compute_matrix(sc);
+    //BoundaryMatrix reduction = PersistentHomology::compute_matrix(sc);
 
     // build a cover
-    //Cover c(sc, vertex_map);
-    //BoundaryMatrix reduction = PersistentHomology::compute_matrix(c);
+    Cover c(sc, vertex_map);
+    BoundaryMatrix reduction = PersistentHomology::compute_matrix(c);
 
     //string sel_id = data["sel_id"];
     //string filename = sel_id + "_reduction_basis.txt";

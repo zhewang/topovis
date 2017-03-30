@@ -26,6 +26,7 @@ struct BoundaryMatrix {
     std::vector< std::list<int> > data;
 
     int size() { return header.size(); }
+    void print();
 
     inline std::list<int>& operator[] (const int i) {
         return this->data[i];
