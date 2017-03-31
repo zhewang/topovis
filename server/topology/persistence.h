@@ -22,7 +22,7 @@ struct BoundaryMatrix {
     BoundaryMatrix(std::vector<int> &header, std::vector< std::list<int> > &data);
     ~BoundaryMatrix();
 
-    std::vector<int> header;
+    std::vector<int> header; //the index in the global complex for each column
     std::vector< std::list<int> > data;
 
     int size() { return header.size(); }
@@ -46,7 +46,10 @@ class PersistentHomology  {
         // TODO calculate reduced matrix given a simplex mapping
         static BoundaryMatrix compute_matrix( Cover &cover );
 
+        static std::list<int> reduce_column(std::list<int> &left, std::list<int> &right);
+
         static void reduce_matrix(BoundaryMatrix &bm);
+        static void reduce_matrix2(BoundaryMatrix &bm);
 
         static PersistenceDiagram* read_persistence_diagram(BoundaryMatrix &reduction, SimplicialComplex &sc);
 

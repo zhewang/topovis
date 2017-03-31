@@ -85,7 +85,7 @@ BoundaryMatrix PersistentHomology::compute_matrix(
     BoundaryMatrix bm(header, reduction);
 
     // reduce the boundary matrix
-    reduce_matrix(bm);
+    reduce_matrix2(bm);
 
     return bm;
 }
@@ -106,6 +106,7 @@ void PersistentHomology::reduce_matrix(BoundaryMatrix &bm) {
 	// perform reduction
     for(int i = 0; i < filtration_size; i++)  {
         int idx = i+1;
+        std::cout << "idx: " << idx << std::endl;
 
         // until we are either definitively a birth cycle or a death cycle ...
         int low_i = reduction[idx].back();
@@ -143,6 +144,72 @@ void PersistentHomology::reduce_matrix(BoundaryMatrix &bm) {
             death_cycle_ref[low_i] = idx;
             // kill cycle at low_i, since it represents a birth
             reduction[low_i] = PHCycle();
+        }
+    }
+
+	persistence_timer.end();
+	persistence_timer.dump_time();
+}
+
+
+std::list<int> PersistentHomology::reduce_column(std::list<int> &left_list, std::list<int> &right_list) {
+    std::list<int> result;
+
+    std::vector<int> left{std::make_move_iterator(std::begin(left_list)), std::make_move_iterator(std::end(left_list))};
+    std::vector<int> right{std::make_move_iterator(std::begin(right_list)), std::make_move_iterator(std::end(right_list))};
+
+    int i = 0;
+    int j = 0;
+    int ll = left.size();
+    int lr = right.size();
+    while(i < ll && j < lr) {
+        if(left[i] < right[j]) {
+            result.push_back(left[i]);
+            i += 1;
+        } else if(left[i] > right[j]) {
+            result.push_back(right[j]);
+            j += 1;
+        } else {
+            i += 1;
+            j += 1;
+        }
+    }
+    return result;
+}
+
+void PersistentHomology::reduce_matrix2(BoundaryMatrix &bm) {
+	std::cout << "doing reduction2..." << std::endl;
+	ComputationTimer persistence_timer("persistence computation time");
+	persistence_timer.start();
+
+    int filtration_size = bm.data.size()-1; // minus the empty simplex
+    std::vector< std::list<int> > &m = bm.data;
+    std::map<int, int> low_to_col; // from low[i] to col indices
+
+    int i = -1;
+    for(auto &col : m) {
+        i ++;
+        if(col.size() == 0) continue;
+
+        int mx = col.back();
+        while(low_to_col.find(mx) != low_to_col.end()) {
+            auto& col_to_reduce = m[low_to_col[mx]];
+            //TODO More efficient: we can modify col in place
+            auto new_col = reduce_column(col_to_reduce, col);
+            col = new_col;
+            if(col.size() == 0) {
+                mx = -1;
+                break;
+            }
+            mx = col.back();
+        }
+
+        if(mx == -1) {
+            //if(low_to_col.find(bm.header[i]) != low_to_col.end()) {
+                //low_to_col.erase();
+            //}
+        } else {
+            low_to_col[mx] = bm.header[i];
         }
     }
 

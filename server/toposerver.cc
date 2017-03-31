@@ -144,31 +144,14 @@ json compute_reduction_matrix(json data)
     // and persistenthomology use this complex to calculate ph
     sparse_filtration->build_filtration();
     SimplicialComplex sc = sparse_filtration->get_complex();
-    //BoundaryMatrix reduction = PersistentHomology::compute_matrix(sc);
+    BoundaryMatrix reduction = PersistentHomology::compute_matrix(sc);
 
     // build a cover
-    Cover c(sc, vertex_map);
-    BoundaryMatrix reduction = PersistentHomology::compute_matrix(c);
+    //Cover c(sc, vertex_map);
+    //BoundaryMatrix reduction = PersistentHomology::compute_matrix(c);
 
-    //string sel_id = data["sel_id"];
-    //string filename = sel_id + "_reduction_basis.txt";
 
-    //// serialize vector
-    //{
-        //std::ofstream ofs(filename);
-        //boost::archive::text_oarchive oa(ofs);
-        //oa & reduction;
-    //}
-
-    //std::vector<PHCycle> new_reduction;
-
-    //// load serialized vector
-    //{
-        //std::ifstream ifs(filename);
-        //boost::archive::text_iarchive ia(ifs);
-        //ia & new_reduction;
-    //}
-
+    // read pd
 	PersistenceDiagram *sparse_rips_pd =
         PersistentHomology::read_persistence_diagram(reduction, sc);
 

@@ -46,7 +46,7 @@ std::map<std::string, int> SimplicialComplex::get_simplex_map() {
     return map;
 }
 
-void SimplicialComplex::print() {
+void SimplicialComplex::print() const {
     std::cout << "{ ";
     for(int i = 0; i < this->allSimplicis.size(); i ++) {
         if(i > 0) { std::cout << ", "; }
