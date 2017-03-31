@@ -144,11 +144,11 @@ json compute_reduction_matrix(json data)
     // and persistenthomology use this complex to calculate ph
     sparse_filtration->build_filtration();
     SimplicialComplex sc = sparse_filtration->get_complex();
-    BoundaryMatrix reduction = PersistentHomology::compute_matrix(sc);
+    //BoundaryMatrix reduction = PersistentHomology::compute_matrix(sc);
 
     // build a cover
-    //Cover c(sc, vertex_map);
-    //BoundaryMatrix reduction = PersistentHomology::compute_matrix(c);
+    Cover c(sc, vertex_map);
+    BoundaryMatrix reduction = PersistentHomology::compute_matrix(c);
 
 
     // read pd

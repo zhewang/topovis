@@ -209,7 +209,7 @@ void PersistentHomology::reduce_matrix2(BoundaryMatrix &bm) {
                 //low_to_col.erase();
             //}
         } else {
-            low_to_col[mx] = bm.header[i];
+            low_to_col[mx] = i;
         }
     }
 
@@ -276,7 +276,7 @@ BoundaryMatrix PersistentHomology::compute_matrix( Cover &cover ) {
 
     std::cout << "reducing glued matrix\n";
     BoundaryMatrix bm(merged_header, merged_data);
-    reduce_matrix(bm);
+    reduce_matrix2(bm);
     return bm;
 }
 
