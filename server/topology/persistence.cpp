@@ -242,6 +242,15 @@ BoundaryMatrix PersistentHomology::compute_matrix( Cover &cover ) {
     std::vector<int> merged_header;
     std::vector< std::list<int> > merged_data;
 
+    // Only a place holder
+    for(int i = 0; i < cover.subComplexSize(); i ++) {
+        for(int j = 0; j < rm_vec[i].size(); j ++) {
+            merged_header.push_back(rm_vec[i].header[j]);
+            merged_data.push_back(rm_vec[i].data[j]);
+        }
+    }
+
+    /*
     // pointers to the head of each subcomplex vector
     // start from 1 to ignore the empty simplex for now
     std::vector<int> p(cover.subComplexSize(), 1);
@@ -273,6 +282,7 @@ BoundaryMatrix PersistentHomology::compute_matrix( Cover &cover ) {
             break;
         }
     }
+    */
 
     std::cout << "reducing glued matrix\n";
     BoundaryMatrix bm(merged_header, merged_data);
