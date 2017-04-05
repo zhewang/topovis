@@ -40,7 +40,7 @@ Cover::Cover(const SimplicialComplex &sc, std::map<int,int> &vertex_map) {
     }
 
     // calculate blowup complex
-    std::vector<int> intersection = subcomplex_IDs[IDs[0]];
+    this->intersection = subcomplex_IDs[IDs[0]];
 
     //sc.print();
 
@@ -57,23 +57,24 @@ Cover::Cover(const SimplicialComplex &sc, std::map<int,int> &vertex_map) {
                               intersection.begin(),
                               intersection.end(),
                               std::back_inserter(temp));
-        intersection = temp;
+        this->intersection = temp;
     }
 
-    //blowupComplex = SimplicialComplex(intersection);
     std::cout << "blowup complex intersection: " << std::endl;
-    //sc.print();
+    std::vector<Simplex> intersection_simplicis;
     int count = 0;
     for(auto& id: intersection) {
-        if(count != 0) {
-            std::cout << " ";
-        }
+        //if(count != 0) {
+            //std::cout << " ";
+        //}
+        //count ++;
+        //std::cout << "{" << sc.allSimplicis[id-1].id() << "}";
 
-        std::cout << "{" << sc.allSimplicis[id-1].id() << "}";
-        count ++;
-        //std::cout << id << ", ";
+        intersection_simplicis.push_back(sc.allSimplicis[id-1]);
+
     }
-    std::cout << std::endl;
-    //blowupComplex.print();
+    //std::cout << std::endl;
+    blowupComplex = SimplicialComplex(intersection_simplicis);
+    blowupComplex.print();
 
 }

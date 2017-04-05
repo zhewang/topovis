@@ -19,6 +19,8 @@ class Cover {
         SimplicialComplex blowupComplex;
         std::vector<std::string> IDs;
 
+        std::vector<int> intersection;
+
         // we need this to preserve the order of simplices in subComplexes
         std::map<std::string, int> SimplexIDMap;
 };
