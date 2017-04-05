@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "cover.h"
 #include "string"
 
@@ -7,6 +9,9 @@ Cover::Cover() {
 Cover::Cover(SimplicialComplex &sc, std::map<int,int> &vertex_map) {
     // Get the simplex ID mapping
     this->SimplexIDMap = sc.get_simplex_map();
+
+    // TODO we can only keep the indices for each subcomplex to reduce memory
+    // usage
 
     // Calculate sub-complexes
     std::map<std::string, std::vector<Simplex> > subcomplex_map;
@@ -34,6 +39,21 @@ Cover::Cover(SimplicialComplex &sc, std::map<int,int> &vertex_map) {
         subComplexes[it->first] = SimplicialComplex(it->second, true);
     }
 
-    // TODO calculate blowup complex
+    // calculate blowup complex
+    std::vector<Simplex> intersection(subComplexes[IDs[0]].allSimplicis.size());
+
+    for(int i = 0; i < this->IDs.size(); i ++) {
+        subComplexes[IDs[i]].print();
+        auto it = std::set_intersection(subComplexes[IDs[i]].allSimplicis.begin(),
+                                        subComplexes[IDs[i]].allSimplicis.end(),
+                                        intersection.begin(),
+                                        intersection.end(),
+                                        intersection.begin());
+        intersection.resize(it-intersection.begin());
+    }
+
+    blowupComplex = SimplicialComplex(intersection);
+    std::cout << "blowup complex intersection: " << std::endl;
+    blowupComplex.print();
 
 }

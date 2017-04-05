@@ -11,7 +11,8 @@ Simplex::Simplex(const std::vector<int> & _simplex, MetricSpace* _metricSpace)  
 	std::sort(simplex.begin(), simplex.end());
 
 	metric_space = _metricSpace;
-	cached_distance = 0;
+	//cached_distance = 0;
+    compute_simplex_distance();
 
     char unique_id[10*(simplex.size()+1)];
     sprintf(unique_id, "%u", simplex[0]);

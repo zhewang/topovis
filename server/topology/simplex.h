@@ -6,8 +6,10 @@
 #include <vector>
 #include <iostream>
 #include <algorithm>
+#include <math.h>
 
 #include "metric_space.h"
+
 
 class Simplex  {
 	public:
@@ -57,10 +59,10 @@ class Simplex  {
 
 			// otherwise, take largest edge distance on simplex for comparison
 			double our_edge_dist = this->get_simplex_distance(), other_edge_dist = _simp.get_simplex_distance();
-			if(our_edge_dist < other_edge_dist)
-				return true;
-			if(other_edge_dist < our_edge_dist)
-				return false;
+            if(our_edge_dist < other_edge_dist)
+                return true;
+            if(other_edge_dist < our_edge_dist)
+                return false;
 
 			// if they are equivalent, then lower dimensional simplices precede higher dimensional ones
             if(our_dim < other_dim)
@@ -72,6 +74,8 @@ class Simplex  {
             for(int i = 0; i < other_dim+1; i ++) {
                 if(this->vertex(i) < _simp.vertex(i))
                     return true;
+                if(this->vertex(i) > _simp.vertex(i))
+                    return false;
             }
             return false;
 		}
@@ -89,6 +93,30 @@ class Simplex  {
 		MetricSpace* metric_space;
 		double cached_distance;
         std::string uid;
+};
+
+struct lex_compare {
+    bool operator() (const Simplex& left, const Simplex& right) const{
+			int left_dim = left.dim(), right_dim = right.dim();
+
+			// if dimensions are 0, then just use index for comparison
+			if(left_dim==0 && right_dim==0)
+				return left.vertex(0) < right.vertex(0);
+
+			// lower dimensional simplices precede higher dimensional ones
+            if(left_dim < right_dim)
+                return true;
+            if(left_dim > right_dim)
+                return false;
+
+            for(int i = 0; i < left_dim+1; i ++) {
+                if(left.vertex(i) < right.vertex(i))
+                    return true;
+                if(left.vertex(i) > right.vertex(i))
+                    return false;
+            }
+            return false;
+    }
 };
 
 #endif
