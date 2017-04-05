@@ -36,3 +36,5 @@ std::vector<Simplex> Simplex::faces()  {
 	}
 	return all_faces;
 }
+
+std::map<std::string, int> global_compare::order_map = std::map<std::string, int>();

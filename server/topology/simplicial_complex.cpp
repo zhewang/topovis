@@ -8,7 +8,7 @@ SimplicialComplex::SimplicialComplex() {
 SimplicialComplex::SimplicialComplex
 (std::vector<Simplex> &faces, bool from_faces) {
     if(from_faces) {
-        std::set<Simplex, lex_compare> face_set(faces.begin(), faces.end());
+        std::set<Simplex, global_compare> face_set(faces.begin(), faces.end());
 
         for(auto it = faces.begin(); it != faces.end(); it ++) {
             if(it->dim() > 0) {

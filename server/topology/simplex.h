@@ -7,6 +7,7 @@
 #include <iostream>
 #include <algorithm>
 #include <math.h>
+#include <map>
 
 #include "metric_space.h"
 
@@ -95,27 +96,36 @@ class Simplex  {
         std::string uid;
 };
 
+
+struct global_compare {
+    static std::map<std::string, int> order_map;
+
+    bool operator() (const Simplex& left, const Simplex& right) const{
+        return global_compare::order_map.at(left.id()) < global_compare::order_map.at(right.id());
+    }
+};
+
 struct lex_compare {
     bool operator() (const Simplex& left, const Simplex& right) const{
-			int left_dim = left.dim(), right_dim = right.dim();
+        int left_dim = left.dim(), right_dim = right.dim();
 
-			// if dimensions are 0, then just use index for comparison
-			if(left_dim==0 && right_dim==0)
-				return left.vertex(0) < right.vertex(0);
+        //if dimensions are 0, then just use index for comparison
+        if(left_dim==0 && right_dim==0)
+            return left.vertex(0) < right.vertex(0);
 
-			// lower dimensional simplices precede higher dimensional ones
-            if(left_dim < right_dim)
-                return true;
-            if(left_dim > right_dim)
-                return false;
-
-            for(int i = 0; i < left_dim+1; i ++) {
-                if(left.vertex(i) < right.vertex(i))
-                    return true;
-                if(left.vertex(i) > right.vertex(i))
-                    return false;
-            }
+        //lower dimensional simplices precede higher dimensional ones
+        if(left_dim < right_dim)
+            return true;
+        if(left_dim > right_dim)
             return false;
+
+        for(int i = 0; i < left_dim+1; i ++) {
+            if(left.vertex(i) < right.vertex(i))
+                return true;
+            if(left.vertex(i) > right.vertex(i))
+                return false;
+        }
+        return false;
     }
 };
 
