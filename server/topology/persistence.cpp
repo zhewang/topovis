@@ -242,7 +242,7 @@ BoundaryMatrix PersistentHomology::compute_matrix( Cover &cover ) {
     std::vector<int> merged_header;
     std::vector< std::list<int> > merged_data;
 
-    // Only a place holder
+    // FIXME Only a place holder
     for(int i = 0; i < cover.subComplexSize(); i ++) {
         for(int j = 0; j < rm_vec[i].size(); j ++) {
             merged_header.push_back(rm_vec[i].header[j]);

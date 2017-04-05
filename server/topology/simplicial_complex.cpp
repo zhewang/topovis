@@ -29,7 +29,7 @@ SimplicialComplex::SimplicialComplex
     }
 }
 
-std::map<std::string, int> SimplicialComplex::get_simplex_map() {
+std::map<std::string, int> SimplicialComplex::get_simplex_map() const {
     std::map<std::string, int> map;
     for(auto it = allSimplicis.begin(); it != allSimplicis.end(); it ++) {
         map[it->id()] = map.size()+1;

@@ -10,7 +10,7 @@
 class Cover {
 	public:
         Cover();
-		Cover(SimplicialComplex &sc, std::map<int,int> &vertex_map);
+		Cover(const SimplicialComplex &sc, std::map<int,int> &vertex_map);
 
         int subComplexSize() const { return this->IDs.size(); }
 
