@@ -17,6 +17,35 @@
 
 typedef std::list<int> PHCycle;
 
+struct BMCell {
+    BMCell(int f, int s) { first = f; second = s; }
+    int first;
+    int second;
+
+    inline bool operator<(const BMCell& other) {
+        return this->first < other.first;
+    }
+};
+
+struct BMCol {
+    BMCell header;
+    std::vector<BMCell> faces;
+
+    inline bool operator<(const BMCol& other) {
+        return this->header < other.header;
+    }
+};
+
+struct BMatrix{
+    BMatrix();
+    BMatrix(std::vector<BMCol> &cols);
+    ~BMatrix();
+
+    std::vector<BMCol> cols;
+
+    int size() { return cols.size(); }
+};
+
 struct BoundaryMatrix {
     BoundaryMatrix();
     BoundaryMatrix(std::vector<int> &header, std::vector< std::list<int> > &data);
