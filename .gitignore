@@ -1,6 +1,8 @@
 # Dirs
 build/
 
+*.csv
+
 # OSX Cache
 .DS_Store
 
