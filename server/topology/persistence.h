@@ -71,7 +71,7 @@ class PersistentHomology  {
             std::map<std::string, int> &simplex_mapping
         );
 
-        //static BMatrix compute_matrix( Cover &cover );
+        static BMatrix compute_matrix( Cover &cover );
 
         // add right to the left: left = left + right
         static BMCol reduce_column(BMCol &left, BMCol &right);

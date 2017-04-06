@@ -12,12 +12,11 @@ class Cover {
         Cover();
 		Cover(const SimplicialComplex &sc, std::map<int,int> &vertex_map);
 
-        int subComplexSize() const { return this->IDs.size(); }
+        int subComplexCount() const { return this->subComplexes.size(); }
 
         /*************** Members ****************/
-        std::map<std::string, SimplicialComplex> subComplexes;
-        SimplicialComplex blowupComplex;
-        std::vector<std::string> IDs;
+        std::vector<SimplicialComplex> subComplexes;
+        SimplicialComplex intersection_complex;
 
         std::vector<int> intersection;
 

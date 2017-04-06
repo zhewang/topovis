@@ -13,7 +13,7 @@ BMCol::BMCol() {
 }
 
 void BMCol::print() {
-    std::cout << "...." << std::endl;
+    std::cout << "----" << std::endl;
     header.print();
     std::cout << "...." << std::endl;
     for(auto & e: faces) {
@@ -218,78 +218,29 @@ void PersistentHomology::reduce_matrix2(BMatrix &bm) {
 	persistence_timer.dump_time();
 }
 
-/*
-BoundaryMatrix PersistentHomology::compute_matrix( Cover &cover ) {
+BMatrix PersistentHomology::compute_matrix( Cover &cover ) {
     std::cout << "calculating reduction matrix for cover\n";
 
-    std::vector<BoundaryMatrix> rm_vec; // reduced matrices vector
-    for(int i = 0; i < cover.subComplexSize(); ++ i) {
-        std::cout << "subcomplex: " << cover.IDs[i] << std::endl;
+    std::vector<BMatrix> rm_vec; // reduced matrices vector
+    for(int i = 0; i < cover.subComplexCount(); ++ i) {
+        std::cout << "subcomplex: " << i << std::endl;
         //cover.subComplexes[cover.IDs[i]].print();
 
-        BoundaryMatrix bm = PersistentHomology::compute_matrix(
-            cover.subComplexes[cover.IDs[i]],
+        BMatrix bm = PersistentHomology::compute_matrix(
+            cover.subComplexes[i],
+            i,
             cover.SimplexIDMap
         );
         rm_vec.push_back(bm);
     }
 
     std::cout << "gluing...\n";
-    // TODO glue them together
-    // Assumption: each subcomplex is already sorted
-    // 1. reorder each column
-    // 2. reduce the new matrix
-    // Since we only have a small number of subcomplexes, just use linear scan
-    // to merge them. Optimally, we can use a heap.
-    std::vector<int> merged_header;
-    std::vector< std::list<int> > merged_data;
-
-    // FIXME Only a place holder
-    for(int i = 0; i < cover.subComplexSize(); i ++) {
-        for(int j = 0; j < rm_vec[i].size(); j ++) {
-            merged_header.push_back(rm_vec[i].header[j]);
-            merged_data.push_back(rm_vec[i].data[j]);
-        }
-    }
-
-    //// pointers to the head of each subcomplex vector
-    //// start from 1 to ignore the empty simplex for now
-    //std::vector<int> p(cover.subComplexSize(), 1);
-
-    //merged_header.push_back(0);
-    //merged_data.push_back(std::list<int>());
-
-    //while(true) {
-        //int minHead = 0; // which subcomplex has the min head
-        //for(int i = 1; i < cover.subComplexSize(); i ++) {
-            //if(p[i] < rm_vec[i].size() &&
-               //rm_vec[i].header[p[i]] < rm_vec[minHead].header[p[minHead]]) {
-                //minHead = i;
-            //}
-        //}
-        //merged_header.push_back(p[minHead]);
-        //merged_data.push_back(rm_vec[minHead][p[minHead]]);
-        //p[minHead] ++;
-        //if(p[minHead] == rm_vec[minHead].size()) {
-            //p[minHead] = -1;
-        //}
-
-        //int sum = 0;
-        //for(auto& n : p) {
-            //sum += n;
-        //}
-
-        //if(sum == -1*p.size()) {
-            //break;
-        //}
-    //}
+    BMatrix bm = rm_vec[0]; // FIXME just place holder
 
     std::cout << "reducing glued matrix\n";
-    BoundaryMatrix bm(merged_header, merged_data);
     reduce_matrix2(bm);
     return bm;
 }
-*/
 
 PersistenceDiagram* PersistentHomology::read_persistence_diagram
 (BMatrix &reduction, SimplicialComplex &sc) {
@@ -298,16 +249,21 @@ PersistenceDiagram* PersistentHomology::read_persistence_diagram
 
 	std::vector< std::pair<int,int> > persistence_pairing;
 
-    for(int i = 0; i < filtration_size; i++)  {
-        int idx = i+1;
+    for(int i = 1; i < reduction.cols.size(); i++)  {
 
         // until we are either definitively a birth cycle or a death cycle ...
-        int low_i = reduction.cols[idx].faces.back().first;
+        if(reduction.cols[i].faces.size() == 0) {
+            continue;
+        }
+
+        int low_i = reduction.cols[i].faces.back().first;
 
         // if we are a death cycle then add us to the list, add as persistence pairings
-        if(reduction.cols[idx].faces.size() > 0)  {
+        if(reduction.cols[i].faces.size() > 0)  {
             if(low_i > 0)
-                persistence_pairing.push_back(std::pair<int,int>(low_i-1,idx-1));
+                persistence_pairing.push_back(std::pair<int,int>(
+                            low_i-1,
+                            reduction.cols[i].header.first-1));
         }
     }
 
