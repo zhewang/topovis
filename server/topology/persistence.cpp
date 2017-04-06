@@ -1,25 +1,29 @@
 #include "persistence.h"
+#include <algorithm>
 
-BoundaryMatrix::BoundaryMatrix() {
+
+BMCell::BMCell() {
+    first = 0;
+    second = 0;
 }
 
-BoundaryMatrix::~BoundaryMatrix() {
+BMCol::BMCol() {
+    header = BMCell();
+    faces = std::vector<BMCell>();
 }
 
-BoundaryMatrix::BoundaryMatrix(std::vector<int> &_h, std::vector< std::list<int> > &_d) {
-    this->header = _h;
-    this->data = _d;
-}
-
-void BoundaryMatrix::print() {
-    for(auto& col : data) {
-        for(auto& row : col) {
-            std::cout << row << " ";
-        }
-        std::cout << std::endl;
+void BMCol::print() {
+    std::cout << "...." << std::endl;
+    header.print();
+    std::cout << "...." << std::endl;
+    for(auto & e: faces) {
+        e.print();
     }
 }
 
+BMatrix::BMatrix(std::vector<BMCol> &_cols) {
+    this->cols = _cols;
+}
 ///////////////////////////////////////////////////////////////////////////////
 
 PersistentHomology::PersistentHomology()  {
@@ -28,13 +32,14 @@ PersistentHomology::PersistentHomology()  {
 PersistentHomology::~PersistentHomology()  {
 }
 
-BoundaryMatrix PersistentHomology::compute_matrix(const SimplicialComplex &sc) {
+BMatrix PersistentHomology::compute_matrix(const SimplicialComplex &sc) {
     std::map<std::string, int> mapping;
-    return PersistentHomology::compute_matrix(sc, mapping);
+    return PersistentHomology::compute_matrix(sc, 0, mapping);
 }
 
-BoundaryMatrix PersistentHomology::compute_matrix(
+BMatrix PersistentHomology::compute_matrix(
     const SimplicialComplex &sc,
+    int complexID,
     std::map<std::string, int> &simplex_mapping
 ){
 	int filtration_size = sc.allSimplicis.size();
@@ -49,26 +54,24 @@ BoundaryMatrix PersistentHomology::compute_matrix(
     }
 
 	// initialize reduction to boundaries - just a vector of lists
-    std::vector<int> header;
-    std::vector<PHCycle> reduction;
-    reduction.clear();
-    reduction.resize(filtration_size+1);
+    std::vector<BMCol> cols;
+    cols.resize(filtration_size+1);
 
 	// reserve 1st entry as dummy simplex, in line with reduced persistence
-	reduction[0] = PHCycle();
-    header.push_back(0);
+	cols[0] = BMCol();
 
 	// for each simplex, take its boundary and assign those simplices to its list
 	for(int i = 0; i < filtration_size; i++)  {
 		int idx = i+1;
-		reduction[idx] = PHCycle();
 		Simplex simplex = sc.allSimplicis[i];
+        int globalID = simplex_mapping[simplex.id()];
 
-        header.push_back(simplex_mapping[simplex.id()]);
+        cols[idx] = BMCol();
+        cols[idx].header = BMCell(globalID, complexID);
 
 		// if 0-simplex, then reserve face as dummy simplex
 		if(simplex.dim()==0)  {
-			reduction[idx].push_back(0);
+			cols[idx].faces.push_back(BMCell(0, complexID));
 			continue;
 		}
 
@@ -76,13 +79,13 @@ BoundaryMatrix PersistentHomology::compute_matrix(
 		for(int f = 0; f < faces.size(); f++)  {
 			Simplex next_face = faces[f];
 			int face_id = simplex_mapping[next_face.id()];
-			reduction[idx].push_back(face_id);
+			cols[idx].faces.push_back(BMCell(face_id, complexID));
 		}
 		// sort list, so we can efficiently add cycles and inspect death cycles
-		reduction[idx].sort();
+        std::sort(cols[idx].faces.begin(), cols[idx].faces.end());
 	}
 
-    BoundaryMatrix bm(header, reduction);
+    BMatrix bm(cols);
 
     // reduce the boundary matrix
     reduce_matrix2(bm);
@@ -90,121 +93,119 @@ BoundaryMatrix PersistentHomology::compute_matrix(
     return bm;
 }
 
-void PersistentHomology::reduce_matrix(BoundaryMatrix &bm) {
-	std::cout << "doing reduction..." << std::endl;
-	ComputationTimer persistence_timer("persistence computation time");
-	persistence_timer.start();
+//void PersistentHomology::reduce_matrix(BoundaryMatrix &bm) {
+	//std::cout << "doing reduction..." << std::endl;
+	//ComputationTimer persistence_timer("persistence computation time");
+	//persistence_timer.start();
 
-    int filtration_size = bm.data.size()-1; // minus the empty simplex
-    std::vector< std::list<int> > &reduction = bm.data;
+    //int filtration_size = bm.data.size()-1; // minus the empty simplex
+    //std::vector< std::list<int> > &reduction = bm.data;
 
-	// initialize death cycle reference - nothing there yet, so just give it all -1
-    std::vector<int> death_cycle_ref(filtration_size+1);
-	for(int i = 0; i < filtration_size+1; i++)
-		death_cycle_ref[i] = -1;
+	//// initialize death cycle reference - nothing there yet, so just give it all -1
+    //std::vector<int> death_cycle_ref(filtration_size+1);
+	//for(int i = 0; i < filtration_size+1; i++)
+		//death_cycle_ref[i] = -1;
 
-	// perform reduction
-    for(int i = 0; i < filtration_size; i++)  {
-        int idx = i+1;
-        std::cout << "idx: " << idx << std::endl;
+	//// perform reduction
+    //for(int i = 0; i < filtration_size; i++)  {
+        //int idx = i+1;
+        //std::cout << "idx: " << idx << std::endl;
 
-        // until we are either definitively a birth cycle or a death cycle ...
-        int low_i = reduction[idx].back();
-        int num_chains_added = 0;
+        //// until we are either definitively a birth cycle or a death cycle ...
+        //int low_i = reduction[idx].back();
+        //int num_chains_added = 0;
 
-        while(reduction[idx].size() > 0 && death_cycle_ref[low_i] != -1)  {
-            num_chains_added++;
-            // add the prior death cycle to us
-            int death_cycle_ind = death_cycle_ref[low_i];
+        //while(reduction[idx].size() > 0 && death_cycle_ref[low_i] != -1)  {
+            //num_chains_added++;
+            //// add the prior death cycle to us
+            //int death_cycle_ind = death_cycle_ref[low_i];
 
-            PHCycle::iterator our_cycle_iter = reduction[idx].begin(), added_cycle_iter = reduction[death_cycle_ind].begin();
-            while(added_cycle_iter != reduction[death_cycle_ind].end())  {
-                if(our_cycle_iter == reduction[idx].end())  {
-                    reduction[idx].push_back(*added_cycle_iter);
-                    ++added_cycle_iter;
-                    continue;
-                }
-                int sigma_1 = *our_cycle_iter, sigma_2 = *added_cycle_iter;
-                if(sigma_1 == sigma_2)  {
-                    our_cycle_iter = reduction[idx].erase(our_cycle_iter);
-                    ++added_cycle_iter;
-                }
-                else if(sigma_1 < sigma_2)
-                    ++our_cycle_iter;
-                else  {
-                    reduction[idx].insert(our_cycle_iter, sigma_2);
-                    ++added_cycle_iter;
-                }
-            }
-            low_i = reduction[idx].back();
-        }
+            //PHCycle::iterator our_cycle_iter = reduction[idx].begin(), added_cycle_iter = reduction[death_cycle_ind].begin();
+            //while(added_cycle_iter != reduction[death_cycle_ind].end())  {
+                //if(our_cycle_iter == reduction[idx].end())  {
+                    //reduction[idx].push_back(*added_cycle_iter);
+                    //++added_cycle_iter;
+                    //continue;
+                //}
+                //int sigma_1 = *our_cycle_iter, sigma_2 = *added_cycle_iter;
+                //if(sigma_1 == sigma_2)  {
+                    //our_cycle_iter = reduction[idx].erase(our_cycle_iter);
+                    //++added_cycle_iter;
+                //}
+                //else if(sigma_1 < sigma_2)
+                    //++our_cycle_iter;
+                //else  {
+                    //reduction[idx].insert(our_cycle_iter, sigma_2);
+                    //++added_cycle_iter;
+                //}
+            //}
+            //low_i = reduction[idx].back();
+        //}
 
-        // if we are a death cycle then add us to the list, add as persistence pairings
-        if(reduction[idx].size() > 0)  {
-            death_cycle_ref[low_i] = idx;
-            // kill cycle at low_i, since it represents a birth
-            reduction[low_i] = PHCycle();
-        }
-    }
+        //// if we are a death cycle then add us to the list, add as persistence pairings
+        //if(reduction[idx].size() > 0)  {
+            //death_cycle_ref[low_i] = idx;
+            //// kill cycle at low_i, since it represents a birth
+            //reduction[low_i] = PHCycle();
+        //}
+    //}
 
-	persistence_timer.end();
-	persistence_timer.dump_time();
-}
+	//persistence_timer.end();
+	//persistence_timer.dump_time();
+//}
 
 
-std::list<int> PersistentHomology::reduce_column(std::list<int> &left_list, std::list<int> &right_list) {
-    std::list<int> result;
+BMCol PersistentHomology::reduce_column(BMCol &left_col, BMCol &right_col) {
+    BMCol result;
+    result.header = left_col.header;
 
-    std::vector<int> left{std::make_move_iterator(std::begin(left_list)), std::make_move_iterator(std::end(left_list))};
-    std::vector<int> right{std::make_move_iterator(std::begin(right_list)), std::make_move_iterator(std::end(right_list))};
+    auto & left = left_col.faces;
+    auto & right = right_col.faces;
 
-    int i = 0;
-    int j = 0;
-    int ll = left.size();
-    int lr = right.size();
-    while(i < ll && j < lr) {
-        if(left[i] < right[j]) {
-            result.push_back(left[i]);
-            i += 1;
-        } else if(left[i] > right[j]) {
-            result.push_back(right[j]);
-            j += 1;
+    int il = 0;
+    int ir = 0;
+    while(il < left.size() && ir < right.size()) {
+        if(left[il] < right[ir]) {
+            result.faces.push_back(left[il]);
+            il += 1;
+        } else if(right[ir] < left[il]) {
+            result.faces.push_back(right[ir]);
+            ir += 1;
         } else {
-            i += 1;
-            j += 1;
+            il += 1;
+            ir += 1;
         }
     }
     return result;
 }
 
-void PersistentHomology::reduce_matrix2(BoundaryMatrix &bm) {
+void PersistentHomology::reduce_matrix2(BMatrix &bm) {
 	std::cout << "doing reduction2..." << std::endl;
 	ComputationTimer persistence_timer("persistence computation time");
 	persistence_timer.start();
 
-    int filtration_size = bm.data.size()-1; // minus the empty simplex
-    std::vector< std::list<int> > &m = bm.data;
-    std::map<int, int> low_to_col; // from low[i] to col indices
+    int filtration_size = bm.cols.size()-1; // minus the empty simplex
+    std::map<BMCell, int> low_to_col; // from low[i] to col indices
 
     int i = -1;
-    for(auto &col : m) {
+    BMCell minusOne = BMCell(-1, -1);
+    for(auto &col : bm.cols) {
         i ++;
-        if(col.size() == 0) continue;
+        if(col.faces.size() == 0) continue;
 
-        int mx = col.back();
+        BMCell mx = col.faces.back();
         while(low_to_col.find(mx) != low_to_col.end()) {
-            auto& col_to_reduce = m[low_to_col[mx]];
-            //TODO More efficient: we can modify col in place
-            auto new_col = reduce_column(col_to_reduce, col);
+            auto& col_to_reduce = bm.cols[low_to_col[mx]];
+            auto new_col = reduce_column(col, col_to_reduce);
             col = new_col;
-            if(col.size() == 0) {
-                mx = -1;
+            if(col.faces.size() == 0) {
+                mx = minusOne;
                 break;
             }
-            mx = col.back();
+            mx = col.faces.back();
         }
 
-        if(mx == -1) {
+        if(mx == minusOne) {
             //if(low_to_col.find(bm.header[i]) != low_to_col.end()) {
                 //low_to_col.erase();
             //}
@@ -217,6 +218,7 @@ void PersistentHomology::reduce_matrix2(BoundaryMatrix &bm) {
 	persistence_timer.dump_time();
 }
 
+/*
 BoundaryMatrix PersistentHomology::compute_matrix( Cover &cover ) {
     std::cout << "calculating reduction matrix for cover\n";
 
@@ -250,48 +252,47 @@ BoundaryMatrix PersistentHomology::compute_matrix( Cover &cover ) {
         }
     }
 
-    /*
-    // pointers to the head of each subcomplex vector
-    // start from 1 to ignore the empty simplex for now
-    std::vector<int> p(cover.subComplexSize(), 1);
+    //// pointers to the head of each subcomplex vector
+    //// start from 1 to ignore the empty simplex for now
+    //std::vector<int> p(cover.subComplexSize(), 1);
 
-    merged_header.push_back(0);
-    merged_data.push_back(std::list<int>());
+    //merged_header.push_back(0);
+    //merged_data.push_back(std::list<int>());
 
-    while(true) {
-        int minHead = 0; // which subcomplex has the min head
-        for(int i = 1; i < cover.subComplexSize(); i ++) {
-            if(p[i] < rm_vec[i].size() &&
-               rm_vec[i].header[p[i]] < rm_vec[minHead].header[p[minHead]]) {
-                minHead = i;
-            }
-        }
-        merged_header.push_back(p[minHead]);
-        merged_data.push_back(rm_vec[minHead][p[minHead]]);
-        p[minHead] ++;
-        if(p[minHead] == rm_vec[minHead].size()) {
-            p[minHead] = -1;
-        }
+    //while(true) {
+        //int minHead = 0; // which subcomplex has the min head
+        //for(int i = 1; i < cover.subComplexSize(); i ++) {
+            //if(p[i] < rm_vec[i].size() &&
+               //rm_vec[i].header[p[i]] < rm_vec[minHead].header[p[minHead]]) {
+                //minHead = i;
+            //}
+        //}
+        //merged_header.push_back(p[minHead]);
+        //merged_data.push_back(rm_vec[minHead][p[minHead]]);
+        //p[minHead] ++;
+        //if(p[minHead] == rm_vec[minHead].size()) {
+            //p[minHead] = -1;
+        //}
 
-        int sum = 0;
-        for(auto& n : p) {
-            sum += n;
-        }
+        //int sum = 0;
+        //for(auto& n : p) {
+            //sum += n;
+        //}
 
-        if(sum == -1*p.size()) {
-            break;
-        }
-    }
-    */
+        //if(sum == -1*p.size()) {
+            //break;
+        //}
+    //}
 
     std::cout << "reducing glued matrix\n";
     BoundaryMatrix bm(merged_header, merged_data);
     reduce_matrix2(bm);
     return bm;
 }
+*/
 
 PersistenceDiagram* PersistentHomology::read_persistence_diagram
-(BoundaryMatrix &reduction, SimplicialComplex &sc) {
+(BMatrix &reduction, SimplicialComplex &sc) {
 
 	int filtration_size = sc.allSimplicis.size();
 
@@ -301,10 +302,10 @@ PersistenceDiagram* PersistentHomology::read_persistence_diagram
         int idx = i+1;
 
         // until we are either definitively a birth cycle or a death cycle ...
-        int low_i = reduction[idx].back();
+        int low_i = reduction.cols[idx].faces.back().first;
 
         // if we are a death cycle then add us to the list, add as persistence pairings
-        if(reduction[idx].size() > 0)  {
+        if(reduction.cols[idx].faces.size() > 0)  {
             if(low_i > 0)
                 persistence_pairing.push_back(std::pair<int,int>(low_i-1,idx-1));
         }
