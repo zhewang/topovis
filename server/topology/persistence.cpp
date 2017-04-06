@@ -6,11 +6,10 @@ BMCell::BMCell() {
     first = 0;
     second = 0;
 }
-
 ///////////////////////////////////////////////////////////////////////////////
 
 BMCol::BMCol() {
-    header = BMCell();
+    header = BMCell(0, 0);
     faces = std::vector<BMCell>();
 }
 
@@ -32,7 +31,10 @@ BMatrix::BMatrix(std::vector<BMCol> &_cols) {
 }
 
 void BMatrix::append(const BMatrix &other) {
+    // TODO use move_iterator for better performance
+    BMCell zero(0,0);
     for(auto& e : other.cols) {
+        if(e.header == zero) continue;
         this->cols.push_back(e);
     }
 }
@@ -109,68 +111,6 @@ BMatrix PersistentHomology::compute_matrix(
 
     return bm;
 }
-
-//void PersistentHomology::reduce_matrix(BoundaryMatrix &bm) {
-	//std::cout << "doing reduction..." << std::endl;
-	//ComputationTimer persistence_timer("persistence computation time");
-	//persistence_timer.start();
-
-    //int filtration_size = bm.data.size()-1; // minus the empty simplex
-    //std::vector< std::list<int> > &reduction = bm.data;
-
-	//// initialize death cycle reference - nothing there yet, so just give it all -1
-    //std::vector<int> death_cycle_ref(filtration_size+1);
-	//for(int i = 0; i < filtration_size+1; i++)
-		//death_cycle_ref[i] = -1;
-
-	//// perform reduction
-    //for(int i = 0; i < filtration_size; i++)  {
-        //int idx = i+1;
-        //std::cout << "idx: " << idx << std::endl;
-
-        //// until we are either definitively a birth cycle or a death cycle ...
-        //int low_i = reduction[idx].back();
-        //int num_chains_added = 0;
-
-        //while(reduction[idx].size() > 0 && death_cycle_ref[low_i] != -1)  {
-            //num_chains_added++;
-            //// add the prior death cycle to us
-            //int death_cycle_ind = death_cycle_ref[low_i];
-
-            //PHCycle::iterator our_cycle_iter = reduction[idx].begin(), added_cycle_iter = reduction[death_cycle_ind].begin();
-            //while(added_cycle_iter != reduction[death_cycle_ind].end())  {
-                //if(our_cycle_iter == reduction[idx].end())  {
-                    //reduction[idx].push_back(*added_cycle_iter);
-                    //++added_cycle_iter;
-                    //continue;
-                //}
-                //int sigma_1 = *our_cycle_iter, sigma_2 = *added_cycle_iter;
-                //if(sigma_1 == sigma_2)  {
-                    //our_cycle_iter = reduction[idx].erase(our_cycle_iter);
-                    //++added_cycle_iter;
-                //}
-                //else if(sigma_1 < sigma_2)
-                    //++our_cycle_iter;
-                //else  {
-                    //reduction[idx].insert(our_cycle_iter, sigma_2);
-                    //++added_cycle_iter;
-                //}
-            //}
-            //low_i = reduction[idx].back();
-        //}
-
-        //// if we are a death cycle then add us to the list, add as persistence pairings
-        //if(reduction[idx].size() > 0)  {
-            //death_cycle_ref[low_i] = idx;
-            //// kill cycle at low_i, since it represents a birth
-            //reduction[low_i] = PHCycle();
-        //}
-    //}
-
-	//persistence_timer.end();
-	//persistence_timer.dump_time();
-//}
-
 
 BMCol PersistentHomology::reduce_column(BMCol &left_col, BMCol &right_col) {
     BMCol result;
@@ -251,14 +191,18 @@ BMatrix PersistentHomology::compute_matrix( Cover &cover ) {
         rm_vec.push_back(bm);
     }
 
+    //TODO calculate boundary matrix for intersection
+
     std::cout << "gluing...\n";
     BMatrix bm = rm_vec[0];
+    std::cout << bm.size() << std::endl;
     if(rm_vec.size() > 1) {
         for(int i = 1; i < rm_vec.size(); i ++) {
             bm.append(rm_vec[i]);
         }
     }
     bm.sort();
+    std::cout << bm.size() << std::endl;
 
     std::cout << "reducing glued matrix\n";
     reduce_matrix2(bm);
