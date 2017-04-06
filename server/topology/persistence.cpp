@@ -192,6 +192,7 @@ BMatrix PersistentHomology::compute_intersection_matrix(Cover &cover) {
     std::vector<BMCol> cols;
     cols.resize(ints.size());
 
+    // FIXME the following is wrong if number of subcomplexes is greater than 2
     for(int i = 0; i < ints.size(); i ++) {
         int globalIdx = ints[i];
 		Simplex simplex = sc.allSimplicis[globalIdx-1];
