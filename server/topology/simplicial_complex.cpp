@@ -23,7 +23,8 @@ SimplicialComplex::SimplicialComplex
 
         // TODO use move_iterator for better performance
         allSimplicis = std::vector<Simplex>(face_set.begin(), face_set.end());
-        std::sort(allSimplicis.begin(), allSimplicis.end());
+        global_compare c;
+        std::sort(allSimplicis.begin(), allSimplicis.end(), c);
     } else {
         allSimplicis = faces;
     }
