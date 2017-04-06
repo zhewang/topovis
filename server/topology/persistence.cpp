@@ -116,6 +116,7 @@ BMatrix PersistentHomology::compute_matrix(
     // reduce the boundary matrix
     reduce_matrix2(bm);
 
+    //bm.print();
     return bm;
 }
 
@@ -192,8 +193,8 @@ BMatrix PersistentHomology::compute_intersection_matrix(Cover &cover) {
     cols.resize(ints.size());
 
     for(int i = 0; i < ints.size(); i ++) {
-        int globalIdx = ints[i]-1;
-		Simplex simplex = sc.allSimplicis[globalIdx];
+        int globalIdx = ints[i];
+		Simplex simplex = sc.allSimplicis[globalIdx-1];
 
         cols[i] = BMCol();
         cols[i].header = BMCell(globalIdx, -1); // use -1 to represent it's intersection
@@ -218,7 +219,8 @@ BMatrix PersistentHomology::compute_intersection_matrix(Cover &cover) {
     }
 
     BMatrix bm(cols);
-    bm.print();
+    //std::cout << "intersection bm\n";
+    //bm.print();
     return bm;
 }
 
@@ -235,6 +237,7 @@ BMatrix PersistentHomology::compute_matrix( Cover &cover ) {
             i+1,
             cover.SimplexIDMap
         );
+        //bm.print();
         rm_vec.push_back(bm);
     }
 
@@ -243,17 +246,16 @@ BMatrix PersistentHomology::compute_matrix( Cover &cover ) {
 
     std::cout << "gluing...\n";
     BMatrix bm = rm_vec[0];
-    std::cout << bm.size() << std::endl;
     if(rm_vec.size() > 1) {
         for(int i = 1; i < rm_vec.size(); i ++) {
             bm.append(rm_vec[i]);
         }
     }
     bm.sort();
-    std::cout << bm.size() << std::endl;
 
     std::cout << "reducing glued matrix\n";
     reduce_matrix2(bm);
+    //bm.print();
     return bm;
 }
 
@@ -281,6 +283,10 @@ PersistenceDiagram* PersistentHomology::read_persistence_diagram
                             reduction.cols[i].header.first-1));
         }
     }
+
+    //for(auto &p : persistence_pairing) {
+        //std::cout << "(" << p.first << ", " << p.second << ")" << std::endl;
+    //}
 
 	std::vector<PersistentPair> persistent_pairs;
 	for(int i = 0; i < persistence_pairing.size(); i++)  {

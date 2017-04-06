@@ -137,13 +137,13 @@ json compute_reduction_matrix(json data)
 
 	int max_d = 2;
 
-    //Filtration* full_filtration = new RipsFiltration(points, max_d);
+    //Filtration* filtration = new RipsFiltration(points, max_d);
     //PersistentHomology ph(full_filtration);
-    Filtration* sparse_filtration = new SparseRipsFiltration(points, max_d, 1.0/3);
+    Filtration* filtration = new SparseRipsFiltration(points, max_d, 1.0/3);
 
     // and persistenthomology use this complex to calculate ph
-    sparse_filtration->build_filtration();
-    SimplicialComplex sc = sparse_filtration->get_complex();
+    filtration->build_filtration();
+    SimplicialComplex sc = filtration->get_complex();
     //BMatrix reduction = PersistentHomology::compute_matrix(sc);
 
     // build a cover
