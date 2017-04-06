@@ -7,10 +7,14 @@ BMCell::BMCell() {
     second = 0;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 BMCol::BMCol() {
     header = BMCell();
     faces = std::vector<BMCell>();
 }
+
+///////////////////////////////////////////////////////////////////////////////
 
 void BMCol::print() {
     std::cout << "----" << std::endl;
@@ -21,9 +25,22 @@ void BMCol::print() {
     }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 BMatrix::BMatrix(std::vector<BMCol> &_cols) {
     this->cols = _cols;
 }
+
+void BMatrix::append(const BMatrix &other) {
+    for(auto& e : other.cols) {
+        this->cols.push_back(e);
+    }
+}
+
+void BMatrix::sort() {
+    std::sort(cols.begin(), cols.end());
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 PersistentHomology::PersistentHomology()  {
@@ -235,7 +252,13 @@ BMatrix PersistentHomology::compute_matrix( Cover &cover ) {
     }
 
     std::cout << "gluing...\n";
-    BMatrix bm = rm_vec[0]; // FIXME just place holder
+    BMatrix bm = rm_vec[0];
+    if(rm_vec.size() > 1) {
+        for(int i = 1; i < rm_vec.size(); i ++) {
+            bm.append(rm_vec[i]);
+        }
+    }
+    bm.sort();
 
     std::cout << "reducing glued matrix\n";
     reduce_matrix2(bm);

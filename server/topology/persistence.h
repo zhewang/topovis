@@ -57,6 +57,8 @@ struct BMatrix{
     std::vector<BMCol> cols;
 
     int size() { return cols.size(); }
+    void append(const BMatrix &other);
+    void sort();
 };
 
 class PersistentHomology  {
