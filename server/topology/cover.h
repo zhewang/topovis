@@ -17,6 +17,7 @@ class Cover {
         /*************** Members ****************/
         std::vector<SimplicialComplex> subComplexes;
         SimplicialComplex intersection_complex;
+        SimplicialComplex globalComplex;
 
         std::vector<int> intersection;
 

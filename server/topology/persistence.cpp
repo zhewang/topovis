@@ -16,12 +16,13 @@ BMCol::BMCol() {
 ///////////////////////////////////////////////////////////////////////////////
 
 void BMCol::print() {
-    std::cout << "----" << std::endl;
     header.print();
-    std::cout << "...." << std::endl;
+    std::cout << "|";
     for(auto & e: faces) {
         e.print();
+        std::cout << " ";
     }
+    std::cout << std::endl;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -41,6 +42,12 @@ void BMatrix::append(const BMatrix &other) {
 
 void BMatrix::sort() {
     std::sort(cols.begin(), cols.end());
+}
+
+void BMatrix::print() {
+    for(auto & c: cols) {
+        c.print();
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -90,7 +97,7 @@ BMatrix PersistentHomology::compute_matrix(
 
 		// if 0-simplex, then reserve face as dummy simplex
 		if(simplex.dim()==0)  {
-			cols[idx].faces.push_back(BMCell(0, complexID));
+			cols[idx].faces.push_back(BMCell(0, 0));
 			continue;
 		}
 
@@ -175,23 +182,64 @@ void PersistentHomology::reduce_matrix2(BMatrix &bm) {
 	persistence_timer.dump_time();
 }
 
+BMatrix PersistentHomology::compute_intersection_matrix(Cover &cover) {
+    std::vector<int> &ints = cover.intersection;
+    int subComplexCount = cover.subComplexCount();
+    std::map<std::string, int> simplex_mapping = cover.SimplexIDMap;
+    SimplicialComplex &sc = cover.globalComplex;
+
+    std::vector<BMCol> cols;
+    cols.resize(ints.size());
+
+    for(int i = 0; i < ints.size(); i ++) {
+        int globalIdx = ints[i]-1;
+		Simplex simplex = sc.allSimplicis[globalIdx];
+
+        cols[i] = BMCol();
+        cols[i].header = BMCell(globalIdx, -1); // use -1 to represent it's intersection
+
+        // same simplex but different subcomplex
+        for(int j = 0; j < subComplexCount; j ++) {
+            cols[i].faces.push_back(BMCell(globalIdx, j+1));
+        }
+
+		if(simplex.dim()==0)  {
+            cols[i].faces.push_back(BMCell(0, 0));
+		} else {
+            std::vector<Simplex> faces = simplex.faces();
+            for(int f = 0; f < faces.size(); f++)  {
+                Simplex next_face = faces[f];
+                int face_id = simplex_mapping[next_face.id()];
+                cols[i].faces.push_back(BMCell(face_id, -1));
+            }
+        }
+		// sort list, so we can efficiently add cycles and inspect death cycles
+        std::sort(cols[i].faces.begin(), cols[i].faces.end());
+    }
+
+    BMatrix bm(cols);
+    bm.print();
+    return bm;
+}
+
 BMatrix PersistentHomology::compute_matrix( Cover &cover ) {
     std::cout << "calculating reduction matrix for cover\n";
 
     std::vector<BMatrix> rm_vec; // reduced matrices vector
     for(int i = 0; i < cover.subComplexCount(); ++ i) {
-        std::cout << "subcomplex: " << i << std::endl;
+        std::cout << "subcomplex: " << i+1 << std::endl;
         //cover.subComplexes[cover.IDs[i]].print();
 
         BMatrix bm = PersistentHomology::compute_matrix(
             cover.subComplexes[i],
-            i,
+            i+1,
             cover.SimplexIDMap
         );
         rm_vec.push_back(bm);
     }
 
-    //TODO calculate boundary matrix for intersection
+    //calculate boundary matrix for intersection
+    rm_vec.push_back(compute_intersection_matrix(cover));
 
     std::cout << "gluing...\n";
     BMatrix bm = rm_vec[0];

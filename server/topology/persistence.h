@@ -23,7 +23,7 @@ struct BMCell {
     int first;
     int second;
 
-    void print() { std::cout << "(" << first << ", " << second << ")" <<std::endl; }
+    void print() { std::cout << "(" << first << ", " << second << ")"; }
 
     inline bool operator==(const BMCell& other) const{
         return this->first == other.first && this->second == other.second;
@@ -59,6 +59,7 @@ struct BMatrix{
     int size() { return cols.size(); }
     void append(const BMatrix &other);
     void sort();
+    void print();
 };
 
 class PersistentHomology  {
@@ -72,6 +73,7 @@ class PersistentHomology  {
             int complexID,
             std::map<std::string, int> &simplex_mapping
         );
+        static BMatrix compute_intersection_matrix(Cover &cover);
 
         static BMatrix compute_matrix( Cover &cover );
 

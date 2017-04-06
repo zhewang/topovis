@@ -10,6 +10,8 @@ Cover::Cover(const SimplicialComplex &sc, std::map<int,int> &vertex_map) {
     // Get the simplex ID mapping
     this->SimplexIDMap = sc.get_simplex_map();
 
+    this->globalComplex = sc;
+
     // TODO we can only keep the indices for each subcomplex to reduce memory
     // usage
 
