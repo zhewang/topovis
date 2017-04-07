@@ -229,21 +229,22 @@ BMatrix PersistentHomology::compute_matrix( Cover &cover ) {
     std::cout << "calculating reduction matrix for cover\n";
 
     std::vector<BMatrix> rm_vec; // reduced matrices vector
-    for(int i = 0; i < cover.subComplexCount(); ++ i) {
+    int i = 0;
+    for(auto it = cover.subComplexes.begin(); it != cover.subComplexes.end(); it ++) {
         std::cout << "subcomplex: " << i+1 << std::endl;
-        //cover.subComplexes[cover.IDs[i]].print();
 
         BMatrix bm = PersistentHomology::compute_matrix(
-            cover.subComplexes[i],
+            it->second,
             i+1,
             cover.SimplexIDMap
         );
         //bm.print();
         rm_vec.push_back(bm);
+        i++;
     }
 
     //calculate boundary matrix for intersection
-    rm_vec.push_back(compute_intersection_matrix(cover));
+    //rm_vec.push_back(compute_intersection_matrix(cover));
 
     std::cout << "gluing...\n";
     BMatrix bm = rm_vec[0];

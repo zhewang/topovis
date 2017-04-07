@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <iterator>
 
 #include "cover.h"
 #include "string"
@@ -15,7 +16,7 @@ Cover::Cover(const SimplicialComplex &sc, std::map<int,int> &vertex_map) {
     // TODO we can only keep the indices for each subcomplex to reduce memory
     // usage
 
-    // Calculate sub-complexes
+    // Calculate base sub-complexes
     std::map<int, std::vector<Simplex> > subcomplex_map;
 
     for(auto it = sc.allSimplicis.begin(); it != sc.allSimplicis.end(); it ++) {
@@ -27,51 +28,53 @@ Cover::Cover(const SimplicialComplex &sc, std::map<int,int> &vertex_map) {
         subcomplex_map[dest].push_back(*it);
     }
 
-    std::vector< std::vector<int> > subcomplex_IDs;
     for(auto it = subcomplex_map.begin(); it != subcomplex_map.end(); it ++) {
-        subComplexes.push_back(SimplicialComplex(it->second, true));
-        subcomplex_IDs.push_back(std::vector<int>());
-        for(auto& e : subComplexes.back().allSimplicis) {
-            subcomplex_IDs.back().push_back(SimplexIDMap[e.id()]);
+        std::set<int> k;
+        k.insert(it->first);
+
+        subComplexes[k] = SimplicialComplex(it->second, true);
+        subcomplex_IDs[k] = std::vector<int>();
+
+        for(auto& e : subComplexes[k].allSimplicis) {
+            subcomplex_IDs[k].push_back(SimplexIDMap[e.id()]);
         }
     }
 
-    // calculate blowup complex
-    if(subcomplex_IDs.size() > 1) {
-        this->intersection = subcomplex_IDs[0];
+    /*
+    // calculate intersection
+    auto prev_set = subcomplex_IDs;
+    while( prev_set.size() > 0) {
+        std::map<std::set<int>, std::vector<int> > next_set;
 
-        //sc.print();
+        for(auto & prev : prev_set) {
+            for(auto & base : subcomplex_IDs) {
+                std::set<int> intersection_id;
+                std::set_intersection(prev.first.begin(), prev.first.end(),
+                                      base.first.begin(), base.first.end(),
+                                      std::inserter(intersection_id, intersection_id.end()));
+                if(intersection_id == base.first) {
+                    // this means base complex is already in intersection
+                    continue;
+                }
 
-        for(int i = 0; i < subComplexes.size(); i ++) {
-            //subComplexes[IDs[i]].print();
-            //for(auto & e: subcomplex_IDs[IDs[i]]) {
-                //std::cout << e << " ";
-            //}
-            //std::cout << std::endl;
+                if( next_set.count(intersection_id) != 0){
+                    // we've already computed this
+                    continue;
+                }
 
-            std::vector<int> temp;
-            std::set_intersection(subcomplex_IDs[i].begin(),
-                                  subcomplex_IDs[i].end(),
-                                  intersection.begin(),
-                                  intersection.end(),
-                                  std::back_inserter(temp));
-            this->intersection = temp;
-        }
-
-        std::cout << "blowup complex intersection: " << std::endl;
-        std::vector<Simplex> intersection_simplicis;
-        int count = 0;
-        for(auto& id: intersection) {
-            if(count != 0) {
-                std::cout << " ";
+                std::vector<int> intersection_complex;
+                std::set_intersection(prev.second.begin(),
+                                      prev.second.end(),
+                                      base.second.begin(),
+                                      base.second.end(),
+                                      std::back_inserter(intersection_complex));
+                if(intersection_complex.size() > 0) {
+                    next_set[intersection_id] = intersection_complex;
+                }
             }
-            count ++;
-            std::cout << "{" << sc.allSimplicis[id-1].id() << "}";
-
-            intersection_simplicis.push_back(sc.allSimplicis[id-1]);
-
         }
-        std::cout << std::endl;
+        subcomplex_IDs.insert(next_set.begin(), next_set.end());
+        prev_set = next_set;
     }
-
+    */
 }

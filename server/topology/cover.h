@@ -15,9 +15,11 @@ class Cover {
         int subComplexCount() const { return this->subComplexes.size(); }
 
         /*************** Members ****************/
-        std::vector<SimplicialComplex> subComplexes;
-        SimplicialComplex intersection_complex;
         SimplicialComplex globalComplex;
+
+        std::map<std::set<int>, SimplicialComplex> subComplexes; // only base complex
+        std::map<std::set<int>, std::vector<int> > subcomplex_IDs; // inlcuding intersection
+
 
         std::vector<int> intersection;
 
