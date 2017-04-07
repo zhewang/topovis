@@ -40,19 +40,19 @@ Cover::Cover(const SimplicialComplex &sc, std::map<int,int> &vertex_map) {
         }
     }
 
-    /*
     // calculate intersection
+    auto base_set = subcomplex_IDs;
     auto prev_set = subcomplex_IDs;
     while( prev_set.size() > 0) {
         std::map<std::set<int>, std::vector<int> > next_set;
 
         for(auto & prev : prev_set) {
-            for(auto & base : subcomplex_IDs) {
+            for(auto & base : base_set) {
                 std::set<int> intersection_id;
-                std::set_intersection(prev.first.begin(), prev.first.end(),
-                                      base.first.begin(), base.first.end(),
-                                      std::inserter(intersection_id, intersection_id.end()));
-                if(intersection_id == base.first) {
+                std::set_union(prev.first.begin(), prev.first.end(),
+                               base.first.begin(), base.first.end(),
+                               std::inserter(intersection_id, intersection_id.end()));
+                if(prev.first.count(*base.first.begin()) > 0) {
                     // this means base complex is already in intersection
                     continue;
                 }
@@ -76,5 +76,19 @@ Cover::Cover(const SimplicialComplex &sc, std::map<int,int> &vertex_map) {
         subcomplex_IDs.insert(next_set.begin(), next_set.end());
         prev_set = next_set;
     }
-    */
+
+    // print
+    std::cout << "blowup complex size: " << subcomplex_IDs.size() << std::endl;
+    for(auto &e : subcomplex_IDs) {
+        auto index_set = e.first;
+        for(auto &n : index_set) {
+            std::cout << n;
+        }
+        std::cout << " | ";
+        auto IDs = e.second;
+        for(auto &v : IDs) {
+            std::cout << v << " ";
+        }
+        std::cout << std::endl;
+    }
 }
