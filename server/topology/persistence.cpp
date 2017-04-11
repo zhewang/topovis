@@ -229,22 +229,80 @@ BMatrix PersistentHomology::compute_matrix( Cover &cover ) {
     std::cout << "calculating reduction matrix for cover\n";
 
     std::vector<BMatrix> rm_vec; // reduced matrices vector
-    int i = 0;
-    for(auto it = cover.subComplexes.begin(); it != cover.subComplexes.end(); it ++) {
-        std::cout << "subcomplex: " << i+1 << std::endl;
 
-        BMatrix bm = PersistentHomology::compute_matrix(
-            it->second,
-            i+1,
-            cover.SimplexIDMap
-        );
+    // TODO in future, reduced matrix of non-intersection complexes could just
+    // read from nanocube
+    for(auto & s : cover.subcomplex_IDs) {
+        const std::set<int> &cIndexSet = s.first;
+        const std::vector<int> &sIDs = s.second;
+
+        int filtration_size = sIDs.size();
+        int complexID = cover.IntersectionIDMap[cIndexSet];
+
+        std::cout << "calculating for subcomplex: ";
+        std::cout << std::endl;
+        std::cout << "subcomplex ID: " << complexID << std::endl;
+
+        // construct mapping between simplices and their IDs
+
+        // initialize reduction to boundaries - just a vector of lists
+        std::vector<BMCol> cols;
+        cols.resize(filtration_size+1);
+
+        // reserve 1st entry as dummy simplex, in line with reduced persistence
+        cols[0] = BMCol();
+
+        // for each simplex, take its boundary and assign those simplices to its list
+        for(int i = 0; i < filtration_size; i++)  {
+            int idx = i+1; // the index of column in boundary matrix
+            // simpex index = id -1
+            Simplex simplex = cover.globalComplex.allSimplicis[sIDs[i]-1];
+            int globalID = cover.SimplexIDMap[simplex.id()];
+
+            cols[idx] = BMCol();
+            cols[idx].header = BMCell(globalID, complexID);
+
+            // if 0-simplex, then reserve face as dummy simplex
+            if(simplex.dim()==0)  {
+                cols[idx].faces.push_back(BMCell(0, 0));
+                continue;
+            }
+
+            // not 0-simplex, calculate faces
+            std::vector<Simplex> faces = simplex.faces();
+            for(int f = 0; f < faces.size(); f++)  {
+                Simplex next_face = faces[f];
+                int face_id = cover.SimplexIDMap[next_face.id()];
+                cols[idx].faces.push_back(BMCell(face_id, complexID));
+            }
+
+            if(cIndexSet.size() > 1) {
+                // get faces of subcomplex
+                std::vector<std::set<int> > complex_faces;
+                for(auto & e : cIndexSet) {
+                    std::set<int> cface = cIndexSet;
+                    cface.erase(e);
+                    complex_faces.push_back(cface);
+                }
+
+                for(int j = 0; j < complex_faces.size(); j ++) {
+                    int cid = cover.IntersectionIDMap[complex_faces[j]];
+                    cols[idx].faces.push_back(BMCell(globalID, cid));
+                }
+
+            }
+
+            // sort list, so we can efficiently add cycles and inspect death cycles
+            std::sort(cols[idx].faces.begin(), cols[idx].faces.end());
+        }
+
+        BMatrix bm(cols);
+
+        // reduce the boundary matrix
+        reduce_matrix2(bm);
         //bm.print();
         rm_vec.push_back(bm);
-        i++;
     }
-
-    //calculate boundary matrix for intersection
-    //rm_vec.push_back(compute_intersection_matrix(cover));
 
     std::cout << "gluing...\n";
     BMatrix bm = rm_vec[0];

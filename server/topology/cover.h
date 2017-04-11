@@ -25,6 +25,8 @@ class Cover {
 
         // we need this to preserve the order of simplices in subComplexes
         std::map<std::string, int> SimplexIDMap;
+        // so we can only store an integer in matrix instead of a set
+        std::map<std::set<int>, int> IntersectionIDMap;
 };
 
 #endif

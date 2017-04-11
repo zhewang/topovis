@@ -77,10 +77,23 @@ Cover::Cover(const SimplicialComplex &sc, std::map<int,int> &vertex_map) {
         prev_set = next_set;
     }
 
+    //for(auto &c : subcomplex_IDs) {
+        //int cid = 0;
+        //for(auto &e : c.first) {
+            //cid += e;
+            //cid *= 10;
+            //std::cout << e;
+        //}
+        //cid /= 10;
+        //IntersectionIDMap[c.first] = cid;
+    //}
+
     // print
     std::cout << "blowup complex size: " << subcomplex_IDs.size() << std::endl;
     for(auto &e : subcomplex_IDs) {
         auto index_set = e.first;
+        IntersectionIDMap[index_set] = IntersectionIDMap.size()+1;
+
         for(auto &n : index_set) {
             std::cout << n;
         }
