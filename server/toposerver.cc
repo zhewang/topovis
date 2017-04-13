@@ -43,7 +43,7 @@ void read_points_from_json(json& data, Points& points, std::map<int, int> &verte
         p.push_back(t["py"]);
         points.push_back(Vector(p));
         vertex_map[points.size()-1] = t["c"];
-        std::cout << points.size() << ": " << t["c"] << std::endl;
+        //std::cout << points.size() << ": " << t["c"] << std::endl;
     }
 }
 

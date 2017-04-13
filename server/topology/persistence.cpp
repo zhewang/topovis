@@ -265,15 +265,14 @@ BMatrix PersistentHomology::compute_matrix( Cover &cover ) {
             // if 0-simplex, then reserve face as dummy simplex
             if(simplex.dim()==0)  {
                 cols[idx].faces.push_back(BMCell(0, 0));
-                continue;
-            }
-
-            // not 0-simplex, calculate faces
-            std::vector<Simplex> faces = simplex.faces();
-            for(int f = 0; f < faces.size(); f++)  {
-                Simplex next_face = faces[f];
-                int face_id = cover.SimplexIDMap[next_face.id()];
-                cols[idx].faces.push_back(BMCell(face_id, complexID));
+            } else {
+                // not 0-simplex, calculate faces
+                std::vector<Simplex> faces = simplex.faces();
+                for(int f = 0; f < faces.size(); f++)  {
+                    Simplex next_face = faces[f];
+                    int face_id = cover.SimplexIDMap[next_face.id()];
+                    cols[idx].faces.push_back(BMCell(face_id, complexID));
+                }
             }
 
             if(cIndexSet.size() > 1) {
@@ -337,10 +336,28 @@ PersistenceDiagram* PersistentHomology::read_persistence_diagram
 
         // if we are a death cycle then add us to the list, add as persistence pairings
         if(reduction.cols[i].faces.size() > 0)  {
-            if(low_i > 0)
+            if(low_i > 0) {
+                auto lo = reduction.cols[i].faces.back();
+                auto cu = reduction.cols[i].header;
+
+                Simplex birth_simplex = sc.allSimplicis[lo.first-1];
+                Simplex death_simplex = sc.allSimplicis[cu.first-1];
+
+                if(death_simplex.get_simplex_distance() == birth_simplex.get_simplex_distance())
+                    continue;
+
+                //if(birth_simplex.dim() > 0) {
+                    //std::cout << "[";
+                    //std::cout << "(" << lo.first << "," << lo.second << ")";
+                    //std::cout << ", ";
+                    //std::cout << "(" << cu.first << "," << cu.second << ")";
+                    //std::cout << "]" << std::endl;
+                //}
+
                 persistence_pairing.push_back(std::pair<int,int>(
                             low_i-1,
                             reduction.cols[i].header.first-1));
+            }
         }
     }
 
