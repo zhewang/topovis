@@ -36,7 +36,7 @@ void read_points_from_json(json& data, Points& points, std::map<int, int> &verte
     }
 }
 
-json compute_reduction_matrix(json data)
+json compute_persistence_homology(json data)
 {
 	Points points;
     std::map<int,int> vertex_map;
@@ -81,9 +81,7 @@ json compute_reduction_matrix(json data)
 static void handle_query_call(struct mg_connection *c, struct http_message *hm) {
 
   json q = json::parse(string(hm->body.p, hm->body.len));
-  json result = compute_reduction_matrix(q);
-  //json result = persistence_homology(q);
-  //json result = simple_ph();
+  json result = compute_persistence_homology(q);
 
   /* Send result */
   std::string msg_content = result.dump();
