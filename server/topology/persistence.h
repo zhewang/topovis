@@ -73,7 +73,6 @@ class PersistentHomology  {
             int complexID,
             std::map<std::string, int> &simplex_mapping
         );
-        static BMatrix compute_intersection_matrix(Cover &cover);
 
         static BMatrix compute_matrix( Cover &cover );
 

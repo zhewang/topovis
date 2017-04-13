@@ -183,48 +183,6 @@ void PersistentHomology::reduce_matrix2(BMatrix &bm) {
 	persistence_timer.dump_time();
 }
 
-BMatrix PersistentHomology::compute_intersection_matrix(Cover &cover) {
-    std::vector<int> &ints = cover.intersection;
-    int subComplexCount = cover.subComplexCount();
-    std::map<std::string, int> simplex_mapping = cover.SimplexIDMap;
-    SimplicialComplex &sc = cover.globalComplex;
-
-    std::vector<BMCol> cols;
-    cols.resize(ints.size());
-
-    // FIXME the following is wrong if number of subcomplexes is greater than 2
-    for(int i = 0; i < ints.size(); i ++) {
-        int globalIdx = ints[i];
-		Simplex simplex = sc.allSimplicis[globalIdx-1];
-
-        cols[i] = BMCol();
-        cols[i].header = BMCell(globalIdx, -1); // use -1 to represent it's intersection
-
-        // same simplex but different subcomplex
-        for(int j = 0; j < subComplexCount; j ++) {
-            cols[i].faces.push_back(BMCell(globalIdx, j+1));
-        }
-
-		if(simplex.dim()==0)  {
-            cols[i].faces.push_back(BMCell(0, 0));
-		} else {
-            std::vector<Simplex> faces = simplex.faces();
-            for(int f = 0; f < faces.size(); f++)  {
-                Simplex next_face = faces[f];
-                int face_id = simplex_mapping[next_face.id()];
-                cols[i].faces.push_back(BMCell(face_id, -1));
-            }
-        }
-		// sort list, so we can efficiently add cycles and inspect death cycles
-        std::sort(cols[i].faces.begin(), cols[i].faces.end());
-    }
-
-    BMatrix bm(cols);
-    //std::cout << "intersection bm\n";
-    //bm.print();
-    return bm;
-}
-
 BMatrix PersistentHomology::compute_matrix( Cover &cover ) {
     std::cout << "calculating reduction matrix for cover\n";
 
@@ -337,8 +295,8 @@ PersistenceDiagram* PersistentHomology::read_persistence_diagram
         // if we are a death cycle then add us to the list, add as persistence pairings
         if(reduction.cols[i].faces.size() > 0)  {
             if(low_i > 0) {
-                auto lo = reduction.cols[i].faces.back();
-                auto cu = reduction.cols[i].header;
+                auto &lo = reduction.cols[i].faces.back();
+                auto &cu = reduction.cols[i].header;
 
                 Simplex birth_simplex = sc.allSimplicis[lo.first-1];
                 Simplex death_simplex = sc.allSimplicis[cu.first-1];
@@ -346,24 +304,12 @@ PersistenceDiagram* PersistentHomology::read_persistence_diagram
                 if(death_simplex.get_simplex_distance() == birth_simplex.get_simplex_distance())
                     continue;
 
-                //if(birth_simplex.dim() > 0) {
-                    //std::cout << "[";
-                    //std::cout << "(" << lo.first << "," << lo.second << ")";
-                    //std::cout << ", ";
-                    //std::cout << "(" << cu.first << "," << cu.second << ")";
-                    //std::cout << "]" << std::endl;
-                //}
-
                 persistence_pairing.push_back(std::pair<int,int>(
                             low_i-1,
                             reduction.cols[i].header.first-1));
             }
         }
     }
-
-    //for(auto &p : persistence_pairing) {
-        //std::cout << "(" << p.first << ", " << p.second << ")" << std::endl;
-    //}
 
 	std::vector<PersistentPair> persistent_pairs;
 	for(int i = 0; i < persistence_pairing.size(); i++)  {
