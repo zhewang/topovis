@@ -276,12 +276,10 @@ BMatrix PersistentHomology::compute_matrix( Cover &cover ) {
     return bm;
 }
 
-PersistenceDiagram* PersistentHomology::read_persistence_diagram
+PersistenceDiagram PersistentHomology::read_persistence_diagram
 (BMatrix &reduction, SimplicialComplex &sc) {
 
-	int filtration_size = sc.allSimplicis.size();
-
-	std::vector< std::pair<int,int> > persistence_pairing;
+	std::vector<PersistentPair> persistent_pairs;
 
     for(int i = 1; i < reduction.cols.size(); i++)  {
 
@@ -304,25 +302,17 @@ PersistenceDiagram* PersistentHomology::read_persistence_diagram
                 if(death_simplex.get_simplex_distance() == birth_simplex.get_simplex_distance())
                     continue;
 
-                persistence_pairing.push_back(std::pair<int,int>(
-                            low_i-1,
-                            reduction.cols[i].header.first-1));
+                PersistentPair persistent_pair(
+                    birth_simplex.dim(),
+                    birth_simplex.get_simplex_distance(),
+                    death_simplex.get_simplex_distance()
+                );
+
+                persistent_pairs.push_back(persistent_pair);
             }
         }
     }
 
-	std::vector<PersistentPair> persistent_pairs;
-	for(int i = 0; i < persistence_pairing.size(); i++)  {
-		std::pair<int,int> pairing = persistence_pairing[i];
-		Simplex birth_simplex = sc.allSimplicis[pairing.first], death_simplex = sc.allSimplicis[pairing.second];
-		if(death_simplex.get_simplex_distance() == birth_simplex.get_simplex_distance())
-			continue;
-
-		PersistentPair persistent_pair(birth_simplex.dim(), birth_simplex.get_simplex_distance(), death_simplex.get_simplex_distance());
-
-		persistent_pairs.push_back(persistent_pair);
-	}
-
-	PersistenceDiagram *pd = new PersistenceDiagram(persistent_pairs);
+	PersistenceDiagram pd = PersistenceDiagram(persistent_pairs);
 	return pd;
 }

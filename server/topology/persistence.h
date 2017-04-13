@@ -81,7 +81,10 @@ class PersistentHomology  {
 
         static void reduce_matrix(BMatrix &bm);
 
-        static PersistenceDiagram* read_persistence_diagram(BMatrix &reduction, SimplicialComplex &sc);
+        static PersistenceDiagram read_persistence_diagram(
+            BMatrix &reduction,
+            SimplicialComplex &sc
+        );
 
 };
 
