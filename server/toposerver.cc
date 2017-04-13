@@ -14,7 +14,6 @@
 #include "topology/persistence.h"
 #include "topology/sparse_rips_filtration.h"
 #include "topology/rips_filtration.h"
-#include "topology/fixed_filtration.h"
 #include "topology/simplicial_complex.h"
 
 using json = nlohmann::json;

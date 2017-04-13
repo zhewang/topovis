@@ -67,14 +67,11 @@ class PersistentHomology  {
 		PersistentHomology();
 		~PersistentHomology();
 
-        static BMatrix compute_matrix(const SimplicialComplex &sc );
-
-        static BMatrix compute_matrix( Cover &cover );
-
-        // add right to the left: left = left + right
         static BMCol reduce_column(BMCol &left, BMCol &right);
-
         static void reduce_matrix(BMatrix &bm);
+
+        static BMatrix compute_matrix(const SimplicialComplex &sc );
+        static BMatrix compute_matrix( Cover &cover );
 
         static PersistenceDiagram read_persistence_diagram(
             BMatrix &reduction,

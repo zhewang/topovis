@@ -58,57 +58,6 @@ PersistentHomology::PersistentHomology()  {
 PersistentHomology::~PersistentHomology()  {
 }
 
-BMatrix PersistentHomology::compute_matrix(const SimplicialComplex &sc) {
-    int complexID = 1;
-	int filtration_size = sc.allSimplicis.size();
-
-	// construct mapping between simplices and their IDs
-    std::map<std::string, int> simplex_mapping;
-    for(int i = 0; i < filtration_size; i++) {
-        simplex_mapping[sc.allSimplicis[i].id()] = i+1;
-    }
-
-	// initialize reduction to boundaries - just a vector of lists
-    std::vector<BMCol> cols;
-    cols.resize(filtration_size+1);
-
-	// reserve 1st entry as dummy simplex, in line with reduced persistence
-	cols[0] = BMCol();
-
-	// for each simplex, take its boundary and assign those simplices to its list
-	for(int i = 0; i < filtration_size; i++)  {
-		int idx = i+1;
-		Simplex simplex = sc.allSimplicis[i];
-        int globalID = simplex_mapping[simplex.id()];
-
-        cols[idx] = BMCol();
-        cols[idx].header = BMCell(globalID, complexID);
-
-		// if 0-simplex, then reserve face as dummy simplex
-		if(simplex.dim()==0)  {
-			cols[idx].faces.push_back(BMCell(0, 0));
-			continue;
-		}
-
-		std::vector<Simplex> faces = simplex.faces();
-		for(int f = 0; f < faces.size(); f++)  {
-			Simplex next_face = faces[f];
-			int face_id = simplex_mapping[next_face.id()];
-			cols[idx].faces.push_back(BMCell(face_id, complexID));
-		}
-		// sort list, so we can efficiently add cycles and inspect death cycles
-        std::sort(cols[idx].faces.begin(), cols[idx].faces.end());
-	}
-
-    BMatrix bm(cols);
-
-    // reduce the boundary matrix
-    reduce_matrix(bm);
-
-    //bm.print();
-    return bm;
-}
-
 BMCol PersistentHomology::reduce_column(BMCol &left_col, BMCol &right_col) {
     BMCol result;
     result.header = left_col.header;
@@ -170,6 +119,57 @@ void PersistentHomology::reduce_matrix(BMatrix &bm) {
 
 	persistence_timer.end();
 	persistence_timer.dump_time();
+}
+
+BMatrix PersistentHomology::compute_matrix(const SimplicialComplex &sc) {
+    int complexID = 1;
+	int filtration_size = sc.allSimplicis.size();
+
+	// construct mapping between simplices and their IDs
+    std::map<std::string, int> simplex_mapping;
+    for(int i = 0; i < filtration_size; i++) {
+        simplex_mapping[sc.allSimplicis[i].id()] = i+1;
+    }
+
+	// initialize reduction to boundaries - just a vector of lists
+    std::vector<BMCol> cols;
+    cols.resize(filtration_size+1);
+
+	// reserve 1st entry as dummy simplex, in line with reduced persistence
+	cols[0] = BMCol();
+
+	// for each simplex, take its boundary and assign those simplices to its list
+	for(int i = 0; i < filtration_size; i++)  {
+		int idx = i+1;
+		Simplex simplex = sc.allSimplicis[i];
+        int globalID = simplex_mapping[simplex.id()];
+
+        cols[idx] = BMCol();
+        cols[idx].header = BMCell(globalID, complexID);
+
+		// if 0-simplex, then reserve face as dummy simplex
+		if(simplex.dim()==0)  {
+			cols[idx].faces.push_back(BMCell(0, 0));
+			continue;
+		}
+
+		std::vector<Simplex> faces = simplex.faces();
+		for(int f = 0; f < faces.size(); f++)  {
+			Simplex next_face = faces[f];
+			int face_id = simplex_mapping[next_face.id()];
+			cols[idx].faces.push_back(BMCell(face_id, complexID));
+		}
+		// sort list, so we can efficiently add cycles and inspect death cycles
+        std::sort(cols[idx].faces.begin(), cols[idx].faces.end());
+	}
+
+    BMatrix bm(cols);
+
+    // reduce the boundary matrix
+    reduce_matrix(bm);
+
+    //bm.print();
+    return bm;
 }
 
 BMatrix PersistentHomology::compute_matrix( Cover &cover ) {

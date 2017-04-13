@@ -5,10 +5,8 @@ set(CMAKE_BUILD_TYPE Release)
 
 include_directories(${persistence_SOURCE_DIR})
 
+subdirs(geometry topology)
+
 add_executable(toposerver toposerver.cc mongoose.c)
 target_link_libraries( toposerver topology geometry ANN )
 
-add_executable(test test.cc)
-target_link_libraries( test topology geometry ANN)
-
-subdirs(geometry topology)
