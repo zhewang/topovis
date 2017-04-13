@@ -6,17 +6,6 @@
 #include <cstdlib>
 #include <fstream>
 
-//#include <boost/random.hpp>
-//#include <boost/generator_iterator.hpp>
-//#include <boost/date_time/gregorian/gregorian.hpp>
-//#include <boost/date_time/posix_time/posix_time.hpp>
-//#include <boost/algorithm/string.hpp>
-
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/vector.hpp>
-#include <boost/serialization/list.hpp>
-
 #include "mongoose.h"
 #include "json.hpp"
 
