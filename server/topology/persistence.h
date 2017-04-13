@@ -68,11 +68,6 @@ class PersistentHomology  {
 		~PersistentHomology();
 
         static BMatrix compute_matrix(const SimplicialComplex &sc );
-        static BMatrix compute_matrix(
-            const SimplicialComplex &sc,
-            int complexID,
-            std::map<std::string, int> &simplex_mapping
-        );
 
         static BMatrix compute_matrix( Cover &cover );
 

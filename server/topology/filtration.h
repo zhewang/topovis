@@ -22,11 +22,6 @@ class Filtration  {
 
 		virtual bool build_filtration();
 
-        bool binarySplit(std::set<int> &selectedVertices,
-                       Filtration *selectedComplex,
-                       Filtration *unselectedComplex,
-                       Filtration *blowupComplex);
-
         void addSimplex(Simplex s) { this->all_simplices.push_back(s); }
 
         void print();

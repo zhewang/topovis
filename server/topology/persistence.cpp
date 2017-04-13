@@ -59,24 +59,13 @@ PersistentHomology::~PersistentHomology()  {
 }
 
 BMatrix PersistentHomology::compute_matrix(const SimplicialComplex &sc) {
-    std::map<std::string, int> mapping;
-    return PersistentHomology::compute_matrix(sc, 0, mapping);
-}
-
-BMatrix PersistentHomology::compute_matrix(
-    const SimplicialComplex &sc,
-    int complexID,
-    std::map<std::string, int> &simplex_mapping
-){
+    int complexID = 1;
 	int filtration_size = sc.allSimplicis.size();
 
 	// construct mapping between simplices and their IDs
-
-    // if simplex_mapping is empty, it means this is not a subcomplex. Then we
-    // just build the mapping for the whole complex.
-    if(simplex_mapping.size() == 0) {
-        for(int i = 0; i < filtration_size; i++)
-            simplex_mapping[sc.allSimplicis[i].id()] = i+1;
+    std::map<std::string, int> simplex_mapping;
+    for(int i = 0; i < filtration_size; i++) {
+        simplex_mapping[sc.allSimplicis[i].id()] = i+1;
     }
 
 	// initialize reduction to boundaries - just a vector of lists
@@ -145,7 +134,7 @@ BMCol PersistentHomology::reduce_column(BMCol &left_col, BMCol &right_col) {
 }
 
 void PersistentHomology::reduce_matrix(BMatrix &bm) {
-	std::cout << "doing reduction2..." << std::endl;
+	std::cout << "doing reduction..." << std::endl;
 	ComputationTimer persistence_timer("persistence computation time");
 	persistence_timer.start();
 
