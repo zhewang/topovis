@@ -114,7 +114,7 @@ BMatrix PersistentHomology::compute_matrix(
     BMatrix bm(cols);
 
     // reduce the boundary matrix
-    reduce_matrix2(bm);
+    reduce_matrix(bm);
 
     //bm.print();
     return bm;
@@ -144,7 +144,7 @@ BMCol PersistentHomology::reduce_column(BMCol &left_col, BMCol &right_col) {
     return result;
 }
 
-void PersistentHomology::reduce_matrix2(BMatrix &bm) {
+void PersistentHomology::reduce_matrix(BMatrix &bm) {
 	std::cout << "doing reduction2..." << std::endl;
 	ComputationTimer persistence_timer("persistence computation time");
 	persistence_timer.start();
@@ -256,7 +256,7 @@ BMatrix PersistentHomology::compute_matrix( Cover &cover ) {
         BMatrix bm(cols);
 
         // reduce the boundary matrix
-        reduce_matrix2(bm);
+        reduce_matrix(bm);
         //bm.print();
         rm_vec.push_back(bm);
     }
@@ -271,7 +271,7 @@ BMatrix PersistentHomology::compute_matrix( Cover &cover ) {
     bm.sort();
 
     std::cout << "reducing glued matrix\n";
-    reduce_matrix2(bm);
+    reduce_matrix(bm);
     //bm.print();
     return bm;
 }

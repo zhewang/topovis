@@ -79,7 +79,7 @@ class PersistentHomology  {
         // add right to the left: left = left + right
         static BMCol reduce_column(BMCol &left, BMCol &right);
 
-        static void reduce_matrix2(BMatrix &bm);
+        static void reduce_matrix(BMatrix &bm);
 
         static PersistenceDiagram* read_persistence_diagram(BMatrix &reduction, SimplicialComplex &sc);
 
