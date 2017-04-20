@@ -23,7 +23,7 @@ Points pointcloud_two_hole() {
     int id = 0;
     for(double x = 1; x < 17; x++) {
         for(double y = 1; y < 17; y++ ) {
-            if((x == 4 || x == 12) && y >= 3 && y <= 14) continue;
+            if((x == 4 || x == 5 || x == 12 || x == 13) && y >= 4 && y <= 13) continue;
             vector<double> p;
             p.push_back(x);
             p.push_back(y);
@@ -89,7 +89,7 @@ std::map<int, int> get_quadtree_map(Points &points) {
 
 void compute_persistence_homology(Points &points)
 {
-    std::map<int,int> vertex_map;
+    std::map<int,int> vertex_map = get_quadtree_map(points);
 
 	int max_d = 2;
 
@@ -128,7 +128,6 @@ void compute_persistence_homology(Points &points)
 
 int main(int argc, char *argv[]) {
     Points points = pointcloud_two_hole();
-    std::map<int,int> vmap = get_quadtree_map(points);
-    print_points(points, vmap);
+    print_points(points);
     return 0;
 }
