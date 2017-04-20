@@ -129,7 +129,7 @@ function plotScatter(data) {
         catSelection[this.value-1] = this.checked ? true:false;
 
         d3.select('#scatterplot').selectAll("circle").remove();
-        d3.select('#scatterplot').select('svg').selectAll("circle")
+        d3.select('#scatterplot').select('svg').select('g').selectAll("circle")
             .data(data)
             .enter()
             .filter(function(d) { return catSelection[d.c-1]; })
