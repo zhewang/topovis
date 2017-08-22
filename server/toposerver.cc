@@ -96,6 +96,20 @@ static void handle_query_call(struct mg_connection *c, struct http_message *hm) 
   mg_printf(c, ss.str().c_str(), (int) msg_content.size(), msg_content.c_str());
 }
 
+static void handle_root_call(struct mg_connection *c, struct http_message *hnm) {
+  std::string msg_content = "TopoCubes server is running!";
+  const std::string sep = "\r\n";
+
+  std::stringstream ss;
+  ss << "HTTP/1.1 200 OK"             << sep
+    << "Content-Type: application/json" << sep
+    << "Access-Control-Allow-Origin: *" << sep
+    << "Content-Length: %d"             << sep << sep
+    << "%s";
+
+  mg_printf(c, ss.str().c_str(), (int) msg_content.size(), msg_content.c_str());
+}
+
 static void ev_handler(struct mg_connection *c, int ev, void *ev_data) {
   struct http_message *hm = (struct http_message *) ev_data;
 
@@ -105,7 +119,7 @@ static void ev_handler(struct mg_connection *c, int ev, void *ev_data) {
         handle_query_call(c, hm); /* Handle RESTful call */
       }
       else {
-        mg_serve_http(c, hm, s_http_server_opts); /* Serve static content */
+        handle_root_call(c, hm);
       }
       break;
     default:
@@ -121,10 +135,6 @@ int main(int argc, char *argv[]) {
   mg_mgr_init(&mgr, NULL);
   c = mg_bind(&mgr, s_http_port, ev_handler);
   mg_set_protocol_http_websocket(c);
-
-  s_http_server_opts.document_root = "../../webui";
-  s_http_server_opts.enable_directory_listing = "yes";
-
 
   printf("Starting server on port %s\n", s_http_port);
 
