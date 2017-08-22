@@ -50,7 +50,7 @@ class ChoiceList extends Component {
 
   render() {
     return (
-      <div style={{display: 'flex', flexDirection: 'row'}}>
+      <div>
         {Object.keys(this.props.data).map( (d) =>
           <CheckBox
             id={d}
@@ -69,9 +69,7 @@ class MeshPlot extends Component {
   render() {
     return (
       <div className="MeshPlot">
-        <XYPlot height={400} width={400} xDomain={this.props.xDomain} yDomain={this.props.yDomain}>
-          <XAxis />
-          <YAxis />
+        <XYPlot height={this.props.height} width={this.props.width} xDomain={this.props.xDomain} yDomain={this.props.yDomain}>
           {Object.keys(this.props.data).map(
             (k) => <MarkSeries key={k} data={this.props.data[k]} color={classPalate[k]}/>
           )}
@@ -96,7 +94,7 @@ class PersistanceDiagram extends Component {
 
     return (
       <div className="PersistanceDiagram">
-        <XYPlot height={300} width={300}>
+        <XYPlot height={this.props.height} width={this.props.width}>
           <VerticalGridLines />
           <HorizontalGridLines />
           <XAxis />
@@ -117,7 +115,12 @@ class App extends Component {
     this.handleQueryChange = this.handleQueryChange.bind(this);
     this.queryPersistenceDiagram = this.queryPersistenceDiagram.bind(this);
 
-    this.state = {mesh: [], mesh_domain: {}, pd: [], query: {}};
+    this.state = {
+      mesh: [],
+      mesh_domain: {},
+      pd: [],
+      query: {}
+    };
   }
 
   handleQueryChange(e) {
@@ -196,12 +199,13 @@ class App extends Component {
     return (
       <div className="App">
         <MeshPlot
+          height={400} width={400}
           data={queriedMesh || []}
           xDomain={this.state.mesh_domain.xDomain}
           yDomain={this.state.mesh_domain.yDomain}
         />
         <ChoiceList data={this.state.query} onQueryChange={this.handleQueryChange}/>
-        <PersistanceDiagram data={this.state.pd}/>
+        <PersistanceDiagram data={this.state.pd} height={300} width={300}/>
       </div>
     );
   }
