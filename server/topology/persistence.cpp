@@ -121,15 +121,18 @@ void PersistentHomology::reduce_matrix(BMatrix &bm) {
 	persistence_timer.dump_time();
 }
 
-BMatrix PersistentHomology::compute_matrix(const SimplicialComplex &sc) {
+BMatrix PersistentHomology::compute_matrix(
+    const SimplicialComplex &sc,
+    std::map<std::string, int> &simplex_mapping
+) {
     int complexID = 1;
 	int filtration_size = sc.allSimplicis.size();
 
 	// construct mapping between simplices and their IDs
-    std::map<std::string, int> simplex_mapping;
-    for(int i = 0; i < filtration_size; i++) {
-        simplex_mapping[sc.allSimplicis[i].id()] = i+1;
-    }
+    //std::map<std::string, int> simplex_mapping;
+    //for(int i = 0; i < filtration_size; i++) {
+        //simplex_mapping[sc.allSimplicis[i].id()] = i+1;
+    //}
 
 	// initialize reduction to boundaries - just a vector of lists
     std::vector<BMCol> cols;

@@ -70,7 +70,7 @@ class PersistentHomology  {
         static BMCol reduce_column(BMCol &left, BMCol &right);
         static void reduce_matrix(BMatrix &bm);
 
-        static BMatrix compute_matrix(const SimplicialComplex &sc );
+        static BMatrix compute_matrix(const SimplicialComplex &sc, std::map<std::string, int> &sIDMap);
         static BMatrix compute_matrix( Cover &cover );
 
         static PersistenceDiagram read_persistence_diagram(

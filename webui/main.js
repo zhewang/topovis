@@ -40,7 +40,7 @@ $(document).ready(function(){
 
 
     // load data and plot
-    d3.csv('rect.csv', function(data) {
+    d3.csv('mesh.csv', function(data) {
 
         // load data
         for (var i = 0; i < data.length; i ++) {
