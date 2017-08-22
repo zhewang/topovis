@@ -69,7 +69,7 @@ class MeshPlot extends Component {
   render() {
     return (
       <div className="MeshPlot">
-        <XYPlot height={400} width={400} xDomain={[4, 18]} yDomain={[0, 13]}>
+        <XYPlot height={400} width={400} xDomain={this.props.xDomain} yDomain={this.props.yDomain}>
           <XAxis />
           <YAxis />
           {Object.keys(this.props.data).map(
@@ -83,14 +83,25 @@ class MeshPlot extends Component {
 
 class PersistanceDiagram extends Component {
   render() {
+    // find the largest value so we can draw a proper diagonal line
+    let maxValue = -1; // the value of a node in PD will never be negative
+    for(let k of Object.keys(this.props.data)) {
+      for(let d of this.props.data[k]) {
+        if(d.x > maxValue) maxValue = d.x;
+        if(d.y > maxValue) maxValue = d.y;
+      }
+    }
+    if(maxValue === -1) maxValue = 1;
+    maxValue = 1.2*maxValue; // add some padding
+
     return (
       <div className="PersistanceDiagram">
-        <XYPlot height={300} width={300} xDomain={[0, 3]} yDomain={[0, 3]}>
+        <XYPlot height={300} width={300}>
           <VerticalGridLines />
           <HorizontalGridLines />
           <XAxis />
           <YAxis />
-          <LineSeries data={[{x:0, y:0}, {x:3, y:3}]} />
+          <LineSeries data={[{x:0, y:0}, {x:maxValue, y:maxValue}]} />
           {Object.keys(this.props.data).map( (k) =>
             <MarkSeries data={this.props.data[k]} key={k} />
           )}
@@ -106,7 +117,7 @@ class App extends Component {
     this.handleQueryChange = this.handleQueryChange.bind(this);
     this.queryPersistenceDiagram = this.queryPersistenceDiagram.bind(this);
 
-    this.state = {mesh: [], pd: [], query: {}};
+    this.state = {mesh: [], mesh_domain: {}, pd: [], query: {}};
   }
 
   handleQueryChange(e) {
@@ -162,11 +173,19 @@ class App extends Component {
           return parsedData[d.c].push({x: Number(d.px), y: Number(d.py)})
         });
 
+        let xDomain = [], yDomain = []; // calculate the global domain of the mesh
+        xDomain.push( 0.9*Math.min(...data.map( (d) => Number(d.px))) );
+        xDomain.push( 1.05*Math.max(...data.map( (d) => Number(d.px))) );
+        yDomain.push( 0.9*Math.min(...data.map( (d) => Number(d.py))) );
+        yDomain.push( 1.05*Math.max(...data.map( (d) => Number(d.py))) );
+
+        // by default, query all data
         let q = {};
         for(let k of Object.keys(parsedData)) {
           q[k] = true;
         }
-        this.setState({mesh: parsedData, query: q});
+
+        this.setState({mesh: parsedData, mesh_domain:{xDomain: xDomain, yDomain: yDomain}, query: q});
         this.queryPersistenceDiagram();
       });
   }
@@ -176,7 +195,11 @@ class App extends Component {
 
     return (
       <div className="App">
-        <MeshPlot data={queriedMesh || []}/>
+        <MeshPlot
+          data={queriedMesh || []}
+          xDomain={this.state.mesh_domain.xDomain}
+          yDomain={this.state.mesh_domain.yDomain}
+        />
         <ChoiceList data={this.state.query} onQueryChange={this.handleQueryChange}/>
         <PersistanceDiagram data={this.state.pd}/>
       </div>
