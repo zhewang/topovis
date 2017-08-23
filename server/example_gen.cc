@@ -34,9 +34,9 @@ Points pointcloud_two_hole() {
 }
 
 void print_points(Points points){
-    std::cout << "px,py,c" << std::endl;
+    std::cout << "px py c" << std::endl;
     for(auto & v : points) {
-        std::cout << v[0] << "," << v[1] << "," << 1 << std::endl;
+        std::cout << v[0] << " " << v[1] << " " << 1 << std::endl;
     }
 }
 
