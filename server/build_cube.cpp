@@ -1,12 +1,38 @@
 #include <algorithm>
 #include <iterator>
+#include <vector>
+#include <map>
+#include <iostream>
+#include <fstream>
+#include <string>
 
-#include "build_cube.h"
+#include "topology/simplicial_complex.h"
+#include "topology/persistence.h"
+#include "topology/sparse_rips_filtration.h"
 
-BuildCube::BuildCube() {
+void loadCSV(std::string filePath, Points &points);
+void BuildCube(Points &points);
+std::map<int, int> get_quadtree_map(Points &points);
+void SplitComplex(const SimplicialComplex &sc, std::map<int,int> &vertex_map);
+
+
+void loadCSV(std::string filePath, Points &points) {
+  ifstream csvfile;
+  csvfile.open(filePath);
+
+  std::string header;
+  double x,y,c;
+  std::getline(csvfile, header);
+  while(csvfile >> x >> y >> c) {
+    cout << "x: " << x << " ";
+    cout << "y: " << y << " ";
+    cout << "c: " << c << " \n";
+  }
+
+  csvfile.close();
 }
 
-BuildCube::BuildCube(Points &points) {
+void BuildCube(Points &points) {
     auto vmap = get_quadtree_map(points);
 
     Filtration* filtration = new SparseRipsFiltration(points, 2, 1.0/3);
@@ -19,7 +45,7 @@ BuildCube::BuildCube(Points &points) {
 }
 
 // divide current 2D space into 4 bins
-std::map<int, int> BuildCube::get_quadtree_map(Points &points) {
+std::map<int, int> get_quadtree_map(Points &points) {
     // get the range of data
     int xmin, xmax, ymin, ymax;
     xmin = ymin = 65535;
@@ -56,9 +82,9 @@ std::map<int, int> BuildCube::get_quadtree_map(Points &points) {
     return vmap;
 }
 
-void BuildCube::SplitComplex(const SimplicialComplex &sc, std::map<int,int> &vertex_map) {
+void SplitComplex(const SimplicialComplex &sc, std::map<int,int> &vertex_map) {
     // Get the simplex ID mapping
-    SimplexIDMap = sc.get_simplex_map();
+    auto SimplexIDMap = sc.get_simplex_map();
 
     // Calculate base sub-complexes
     std::map<int, std::vector<Simplex> > subcomplex_map;
@@ -77,11 +103,17 @@ void BuildCube::SplitComplex(const SimplicialComplex &sc, std::map<int,int> &ver
         std::set<int> k;
         k.insert(it->first);
 
-        subComplexes[k] = SimplicialComplex(it->second, true);
-        subcomplex_IDs[k] = std::vector<int>();
+        //subComplexes[k] = SimplicialComplex(it->second, true);
+        //subcomplex_IDs[k] = std::vector<int>();
 
-        for(auto& e : subComplexes[k].allSimplicis) {
-            subcomplex_IDs[k].push_back(SimplexIDMap[e.id()]);
-        }
+        //for(auto& e : subComplexes[k].allSimplicis) {
+            //subcomplex_IDs[k].push_back(SimplexIDMap[e.id()]);
+        //}
     }
+}
+
+int main(int argc, char* argv[]) {
+  Points points;
+  loadCSV(argv[1], points);
+  return 0;
 }
