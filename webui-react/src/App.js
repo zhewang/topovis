@@ -6,6 +6,8 @@ import {XYPlot, LineSeries, MarkSeries, VerticalGridLines, HorizontalGridLines, 
 import {csv} from 'd3-request'
 import * as axios from 'axios'
 
+import 'bootstrap/dist/css/bootstrap.min.css';
+
 const classPalate = [
       "#e41a1c",
       "#377eb8",
@@ -50,7 +52,7 @@ class ChoiceList extends Component {
 
   render() {
     return (
-      <div>
+      <div className="ChoiceList">
         {Object.keys(this.props.data).map( (d) =>
           <CheckBox
             id={d}
@@ -67,8 +69,12 @@ class ChoiceList extends Component {
 class MeshPlot extends Component {
 
   render() {
+    const defaultStyle = {
+      display: 'inline-block',
+    };
+
     return (
-      <div className="MeshPlot">
+      <div className="MeshPlot" style={defaultStyle}>
         <XYPlot height={this.props.height} width={this.props.width} xDomain={this.props.xDomain} yDomain={this.props.yDomain}>
           {Object.keys(this.props.data).map(
             (k) => <MarkSeries key={k} data={this.props.data[k]} color={classPalate[k]}/>
@@ -92,8 +98,12 @@ class PersistanceDiagram extends Component {
     if(maxValue === -1) maxValue = 1;
     maxValue = 1.2*maxValue; // add some padding
 
+    const defaultStyle = {
+      display: 'inline-block',
+    };
+
     return (
-      <div className="PersistanceDiagram">
+      <div className="PersistanceDiagram" style={defaultStyle}>
         <XYPlot height={this.props.height} width={this.props.width}>
           <VerticalGridLines />
           <HorizontalGridLines />
@@ -194,18 +204,65 @@ class App extends Component {
   }
 
   render() {
-    let queriedMesh = this.getQueriedMesh(this.state.mesh, this.state.query);
+    const queriedMesh = this.getQueriedMesh(this.state.mesh, this.state.query);
 
-    return (
-      <div className="App">
-        <MeshPlot
-          height={400} width={400}
+    const meshPanel = (
+      <div className="panel panel-default">
+        <div className="panel-heading">Mesh</div>
+        <div className="panel-body">
+          <MeshPlot
+          height={500} width={500}
           data={queriedMesh || []}
           xDomain={this.state.mesh_domain.xDomain}
           yDomain={this.state.mesh_domain.yDomain}
-        />
-        <ChoiceList data={this.state.query} onQueryChange={this.handleQueryChange}/>
-        <PersistanceDiagram data={this.state.pd} height={300} width={300}/>
+          />
+        </div>
+      </div>
+    );
+
+    const queryPanel = (
+      <div className="panel panel-default">
+        <div className="panel-heading">Query</div>
+        <div className="panel-body">
+          <ChoiceList data={this.state.query} onQueryChange={this.handleQueryChange}/>
+        </div>
+      </div>
+    );
+
+    const pdPanel = (
+      <div className="panel panel-default">
+        <div className="panel-heading">Persistance Diagram</div>
+        <div className="panel-body">
+          <PersistanceDiagram data={this.state.pd} height={300} width={300}/>
+        </div>
+      </div>
+    );
+
+    const mainContent = (
+      <div className="container">
+        <div className="row justify-content-center">
+
+          <div className="col-md-7">{meshPanel}</div>
+
+          <div className="col-md-5">
+            <div className="row">
+              <div className="col">{queryPanel}</div>
+            </div>
+            <div className="row">
+              <div className="col">{pdPanel}</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    );
+
+    return (
+      <div className="App">
+        <div className="page-header">
+          <h1>TopoCubes Viewer</h1>
+        </div>
+        <div>{mainContent}</div>
       </div>
     );
   }
