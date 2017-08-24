@@ -175,37 +175,26 @@ json compute_persistence_homology(json data)
     return result.str();
 }
 
+static void sendMSG(struct mg_connection *c, std::string msg) {
+  const std::string sep = "\r\n";
+
+  std::stringstream ss;
+  ss << "HTTP/1.1 200 OK"             << sep
+    << "Content-Type: application/json" << sep
+    << "Access-Control-Allow-Origin: *" << sep
+    << "Content-Length: %d"             << sep << sep
+    << "%s";
+
+  mg_printf(c, ss.str().c_str(), (int) msg.size(), msg.c_str());
+}
+
 static void handle_query_call(struct mg_connection *c, struct http_message *hm) {
 
   json q = json::parse(string(hm->body.p, hm->body.len));
   json result = compute_persistence_homology(q);
 
   /* Send result */
-  std::string msg_content = result.dump();
-  const std::string sep = "\r\n";
-
-  std::stringstream ss;
-  ss << "HTTP/1.1 200 OK"             << sep
-    << "Content-Type: application/json" << sep
-    << "Access-Control-Allow-Origin: *" << sep
-    << "Content-Length: %d"             << sep << sep
-    << "%s";
-
-  mg_printf(c, ss.str().c_str(), (int) msg_content.size(), msg_content.c_str());
-}
-
-static void handle_root_call(struct mg_connection *c, struct http_message *hnm) {
-  std::string msg_content = "TopoCubes server is running!";
-  const std::string sep = "\r\n";
-
-  std::stringstream ss;
-  ss << "HTTP/1.1 200 OK"             << sep
-    << "Content-Type: application/json" << sep
-    << "Access-Control-Allow-Origin: *" << sep
-    << "Content-Length: %d"             << sep << sep
-    << "%s";
-
-  mg_printf(c, ss.str().c_str(), (int) msg_content.size(), msg_content.c_str());
+  sendMSG(c, result.dump());
 }
 
 static void ev_handler(struct mg_connection *c, int ev, void *ev_data) {
@@ -217,7 +206,7 @@ static void ev_handler(struct mg_connection *c, int ev, void *ev_data) {
         handle_query_call(c, hm); /* Handle RESTful call */
       }
       else {
-        handle_root_call(c, hm);
+        sendMSG(c, "TopoCubes server is running!");
       }
       break;
     default:
