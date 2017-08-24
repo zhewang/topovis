@@ -25,6 +25,8 @@ using json = nlohmann::json;
 static const char *s_http_port = "8800";
 static struct mg_serve_http_opts s_http_server_opts;
 
+std::map<std::string, BMatrix> NAIVECUBES;
+
 void loadCSV(std::string filePath, Points &points, std::map<int, int> &vertex_attr_map);
 void BuildCube(Points &points);
 std::map<std::string, std::vector<int> > get_quadtree_map(Points &points);
@@ -233,11 +235,7 @@ int main(int argc, char *argv[]) {
   Points points;
   std::map<int, int> vertex_attr_map;
   loadCSV(argv[1], points, vertex_attr_map);
-
-  std::map<std::string, BMatrix> naiveCubes;
-  std::cout << "pass 1" << std::endl;
-  BuildCube(points, naiveCubes);
-
+  BuildCube(points, NAIVECUBES);
 
   // start serving
   struct mg_mgr mgr;
