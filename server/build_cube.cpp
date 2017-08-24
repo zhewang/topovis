@@ -105,11 +105,17 @@ std::map<std::string, std::vector<int> > get_quadtree_map(Points &points) {
 }
 
 int main(int argc, char* argv[]) {
+  if(argc < 2) {
+    std::cout << "Usage: " << argv[0] << " [data_file_path]" << std::endl;
+    return 0;
+  }
+
   Points points;
   std::map<int, int> vertex_attr_map;
   loadCSV(argv[1], points, vertex_attr_map);
 
   std::map<std::string, BMatrix> naiveCubes;
+  std::cout << "pass 1" << std::endl;
   BuildCube(points, naiveCubes);
   return 0;
 }
