@@ -26,6 +26,11 @@ void BMCol::print() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+BMatrix::BMatrix() {
+  std::vector<BMCol> cols;
+  cols.push_back(BMCol());
+  this->cols = cols;
+}
 
 BMatrix::BMatrix(std::vector<BMCol> &_cols) {
     this->cols = _cols;

@@ -52,6 +52,7 @@ struct BMCol {
 };
 
 struct BMatrix{
+    BMatrix();
     BMatrix(std::vector<BMCol> &cols);
 
     std::vector<BMCol> cols;
