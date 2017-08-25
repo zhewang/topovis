@@ -27,13 +27,13 @@ static struct mg_serve_http_opts s_http_server_opts;
 
 std::map<std::string, BMatrix> NAIVECUBES;
 
-void loadCSV(std::string filePath, Points &points, std::map<int, int> &vertex_attr_map);
+void loadCSV(std::string filePath, Points &points, std::vector<std::vector<double> > &attrs);
 void BuildCube(Points &points);
 std::map<std::string, std::vector<int> > get_quadtree_map(Points &points);
 SimplicialComplex getSubComplex(SimplicialComplex &global, std::vector<int> &ids);
 
 
-void loadCSV(std::string filePath, Points &points, std::map<int, int> &vertex_map) {
+void loadCSV(std::string filePath, Points &points, std::vector<std::vector<double> > &attrs) {
   ifstream csvfile;
   csvfile.open(filePath);
 
@@ -41,11 +41,13 @@ void loadCSV(std::string filePath, Points &points, std::map<int, int> &vertex_ma
   double x,y,c;
   std::getline(csvfile, header);
   while(csvfile >> x >> y >> c) {
-    vector<double> p;
+    vector<double> p, a;
     p.push_back(x);
     p.push_back(y);
     points.push_back(Vector(p));
-    vertex_map[points.size()-1] = c;
+
+    a.push_back(c);
+    attrs.push_back(a);
   }
 
   csvfile.close();
@@ -222,8 +224,8 @@ int main(int argc, char *argv[]) {
 
   // build the cubes
   Points points;
-  std::map<int, int> vertex_attr_map;
-  loadCSV(argv[1], points, vertex_attr_map);
+  std::vector< std::vector<double> > attrs;
+  loadCSV(argv[1], points, attrs);
   BuildCube(points, NAIVECUBES);
 
   // start serving
