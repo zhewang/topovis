@@ -39,7 +39,7 @@ for point in points:
 
 # write to csv file
 with open('mesh.csv', "wb") as file:
-    writer = csv.writer(file)
+    writer = csv.writer(file, delimiter=' ')
     writer.writerow(['px','py','c'])
     for point in points:
         writer.writerow(point)
