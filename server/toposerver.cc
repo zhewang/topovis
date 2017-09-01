@@ -245,10 +245,18 @@ static void handle_query_call(struct mg_connection *c, struct http_message *hm) 
   sendMSG(c, result.dump());
 }
 
+std::vector<int> parseQuery(json q) {
+  std::vector<int> parsed;
+  for (json::iterator it = q.begin(); it != q.end(); ++it) {
+    parsed.push_back(*it);
+  }
+  return parsed;
+}
+
 static void handle_query_call2(struct mg_connection *c, struct http_message *hm) {
 
-  //json q = json::parse(string(hm->body.p, hm->body.len));
-  std::vector<int> q = {1,2,3,4};
+  json query = json::parse(string(hm->body.p, hm->body.len));
+  std::vector<int> q = parseQuery(query);
   json result = queryCategories(q);
 
   /* Send result */

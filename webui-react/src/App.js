@@ -141,31 +141,63 @@ class App extends Component {
   }
 
   queryPersistenceDiagram() {
-    let sendToCubes = {points: []};
-    let queriedMesh = this.getQueriedMesh(this.state.mesh, this.state.query);
-    for(let k of Object.keys(queriedMesh)) {
-      for(let d of queriedMesh[k]) {
-        sendToCubes.points.push({px: d.x, py: d.y, c: Number(k)});
+    let func1 = function() {
+      let sendToCubes = {points: []};
+      let queriedMesh = this.getQueriedMesh(this.state.mesh, this.state.query);
+      for(let k of Object.keys(queriedMesh)) {
+        for(let d of queriedMesh[k]) {
+          sendToCubes.points.push({px: d.x, py: d.y, c: Number(k)});
+        }
       }
-    }
 
-    axios.post('http://localhost:8800/query', JSON.stringify(sendToCubes))
-      .then(function (response) {
-        let rawdata = response.data;
-        let data = {};
-        rawdata.split('\n').map( (row) => {
-          let line = row.split(' ');
-          if (line.length === 3) {
-            data[line[0]] = data[line[0]] || [];
-            data[line[0]].push({x: Number(line[1]), y: Number(line[2])});
-          }
-          return true;
+      axios.post('http://localhost:8800/query', JSON.stringify(sendToCubes))
+        .then(function (response) {
+          let rawdata = response.data;
+          let data = {};
+          rawdata.split('\n').map( (row) => {
+            let line = row.split(' ');
+            if (line.length === 3) {
+              data[line[0]] = data[line[0]] || [];
+              data[line[0]].push({x: Number(line[1]), y: Number(line[2])});
+            }
+            return true;
+          });
+          this.setState({pd: data});
+        }.bind(this))
+        .catch(function (error) {
+          console.log(error);
         });
-        this.setState({pd: data});
-      }.bind(this))
-      .catch(function (error) {
-        console.log(error);
-      });
+    }.bind(this);
+
+    let func2 = function() {
+      let queriedCategories = [];
+      for(let k of Object.keys(this.state.query)) {
+        if(this.state.query[k] === true) {
+          queriedCategories.push(Number(k));
+        }
+      }
+
+
+      axios.post('http://localhost:8800/query2', JSON.stringify(queriedCategories))
+        .then(function (response) {
+          let rawdata = response.data;
+          let data = {};
+          rawdata.split('\n').map( (row) => {
+            let line = row.split(' ');
+            if (line.length === 3) {
+              data[line[0]] = data[line[0]] || [];
+              data[line[0]].push({x: Number(line[1]), y: Number(line[2])});
+            }
+            return true;
+          });
+          this.setState({pd: data});
+        }.bind(this))
+        .catch(function (error) {
+          console.log(error);
+        });
+    }.bind(this);
+
+    func2();
   }
 
   getQueriedMesh(original, query) {
