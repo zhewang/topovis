@@ -27,17 +27,19 @@ typedef std::vector<std::vector<double> > ATTRS;
 static const char *s_http_port = "8800";
 static struct mg_serve_http_opts s_http_server_opts;
 
+Points gPoints;
+std::map<int, int> gVertex_map;
 std::map<int, BMatrix> TOPOCUBES;
 SimplicialComplex gSC;
 
-void loadCSV(std::string filePath, Points &points, ATTRS &attrs);
+void loadCSV(std::string filePath, Points &points, std::map<int, int> &vertex_map, ATTRS &attrs);
 void BuildCube(Points &points, ATTRS &attrs, std::map<int, BMatrix> &naiveCubes);
 std::map<std::string, std::vector<int> > get_quadtree_map(Points &points);
 SimplicialComplex getSubComplex(SimplicialComplex &global, std::vector<int> &ids);
 std::map<int, std::vector<int> > get_category_map(Points &points, ATTRS &attrs, int offset);
 
 
-void loadCSV(std::string filePath, Points &points, ATTRS &attrs) {
+void loadCSV(std::string filePath, Points &points, std::map<int, int> &vertex_map, ATTRS &attrs) {
   ifstream csvfile;
   csvfile.open(filePath);
 
@@ -49,6 +51,8 @@ void loadCSV(std::string filePath, Points &points, ATTRS &attrs) {
     p.push_back(x);
     p.push_back(y);
     points.push_back(Vector(p));
+
+    vertex_map[points.size()-1] = c;
 
     a.push_back(c);
     attrs.push_back(a);
@@ -71,6 +75,7 @@ void BuildCube(Points &points, ATTRS &attrs, std::map<int, BMatrix> &naiveCubes)
     //auto vmap = get_quadtree_map(points);
     auto vmap = get_category_map(points, attrs, 0);
 
+    //Filtration* filtration = new RipsFiltration(points, 2);
     Filtration* filtration = new SparseRipsFiltration(points, 2, 1.0/3);
     filtration->build_filtration();
     gSC = filtration->get_complex();
@@ -155,9 +160,9 @@ void read_points_from_json(json& data, Points& points, std::map<int, int> &verte
 
 json compute_persistence_homology(json data)
 {
-	Points points;
-    std::map<int,int> vertex_map;
-	read_points_from_json(data, points, vertex_map);
+  Points points;
+  std::map<int,int> vertex_map;
+  read_points_from_json(data, points, vertex_map);
   if(points.size() == 0) {
     return "0";
   }
@@ -179,7 +184,7 @@ json compute_persistence_homology(json data)
     BMatrix reduction = PersistentHomology::compute_matrix(c);
 
 
-    std::cout << "reading PD..." << std::endl;
+    //std::cout << "reading PD..." << std::endl;
     // read pd
 	PersistenceDiagram pd =
         PersistentHomology::read_persistence_diagram(reduction, sc);
@@ -204,9 +209,10 @@ json queryCategories(std::vector<int> q) {
   // fetch bm from cubes (need to assign subcomplex ID) and calculate bm for intersection
   BMatrix reduction = PersistentHomology::compute_matrix(c, TOPOCUBES);
 
-  std::cout << "reading PD..." << std::endl;
+  //std::cout << "reading PD..." << std::endl;
   // read pd
   PersistenceDiagram pd =
+    //PersistentHomology::read_persistence_diagram(TOPOCUBES[0], gSC);
     PersistentHomology::read_persistence_diagram(reduction, gSC);
 
   pd.sort_pairs_by_persistence();
@@ -288,10 +294,10 @@ int main(int argc, char *argv[]) {
   }
 
   // build the cubes
-  Points points;
   ATTRS attrs;
-  loadCSV(argv[1], points, attrs);
-  BuildCube(points, attrs, TOPOCUBES);
+  //std::map<int,int> vertex_map;
+  loadCSV(argv[1], gPoints, gVertex_map, attrs);
+  BuildCube(gPoints, attrs, TOPOCUBES);
 
   // TODO build nanocubes for "ordinary" data exploration
 

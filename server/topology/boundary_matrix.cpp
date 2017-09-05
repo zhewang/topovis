@@ -64,11 +64,17 @@ std::vector<int> BMatrix::getAllSimplicis() {
 }
 
 void BMatrix::setAllComplexID(int id) {
-  // don't change first col
-  for(int i = 1; i < cols.size(); i ++) {
-    cols[i].header.second = id;
+  // don't change BMCell(0,0)
+  for(int i = 0; i < cols.size(); i ++) {
+    if(cols[i].header.first == 0 && cols[i].header.second == 0) {
+    } else {
+      cols[i].header.second = id;
+    }
     for(auto &face : cols[i].faces) {
-      face.second = id;
+      if(face.first == 0 && face.second ==0) {
+      } else {
+        face.second = id;
+      }
     }
   }
 }

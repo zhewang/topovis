@@ -33,9 +33,9 @@ BMCol PersistentHomology::reduce_column(BMCol &left_col, BMCol &right_col) {
 }
 
 void PersistentHomology::reduce_matrix(BMatrix &bm) {
-	std::cout << "doing reduction..." << std::endl;
-	ComputationTimer persistence_timer("persistence computation time");
-	persistence_timer.start();
+	//std::cout << "doing reduction..." << std::endl;
+	//ComputationTimer persistence_timer("persistence computation time");
+	//persistence_timer.start();
 
     int filtration_size = bm.cols.size()-1; // minus the empty simplex
     std::map<BMCell, int> low_to_col; // from low[i] to col indices
@@ -67,8 +67,8 @@ void PersistentHomology::reduce_matrix(BMatrix &bm) {
         }
     }
 
-	persistence_timer.end();
-	persistence_timer.dump_time();
+	//persistence_timer.end();
+	//persistence_timer.dump_time();
 }
 
 BMatrix PersistentHomology::compute_matrix(
@@ -126,7 +126,7 @@ BMatrix PersistentHomology::compute_matrix(
 }
 
 BMatrix PersistentHomology::compute_matrix( Cover &cover, std::map<int, BMatrix> &topocubes ) {
-    std::cout << "calculating reduction matrix for cover\n";
+    //std::cout << "calculating reduction matrix for cover\n";
 
     std::vector<BMatrix> rm_vec; // reduced matrices vector
 
@@ -204,7 +204,7 @@ BMatrix PersistentHomology::compute_matrix( Cover &cover, std::map<int, BMatrix>
         }
     }
 
-    std::cout << "gluing...\n";
+    //std::cout << "gluing...\n";
     BMatrix bm = rm_vec[0];
     if(rm_vec.size() > 1) {
         for(int i = 1; i < rm_vec.size(); i ++) {
@@ -213,7 +213,7 @@ BMatrix PersistentHomology::compute_matrix( Cover &cover, std::map<int, BMatrix>
     }
     bm.sort();
 
-    std::cout << "reducing glued matrix\n";
+    //std::cout << "reducing glued matrix\n";
     reduce_matrix(bm);
     //bm.print();
     return bm;
@@ -230,6 +230,18 @@ BMatrix PersistentHomology::compute_matrix( Cover &cover ) {
 
         int filtration_size = sIDs.size();
         int complexID = cover.IntersectionIDMap[cIndexSet];
+
+        /*
+        std::cout << "subcomplex: " << complexID << std::endl;
+        for(auto &i : cIndexSet) {
+          std::cout << i << "-";
+        }
+        std::cout << std::endl;
+        for(int i = 0; i < 12; i ++) {
+          std::cout << sIDs[i] << ", ";
+        }
+        std::cout << std::endl;
+        */
 
         // construct mapping between simplices and their IDs
         // initialize reduction to boundaries - just a vector of lists
