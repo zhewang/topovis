@@ -3,7 +3,7 @@ import './App.css';
 import '../node_modules/react-vis/dist/style.css';
 
 import {XYPlot, LineSeries, MarkSeries, VerticalGridLines, HorizontalGridLines, XAxis, YAxis} from 'react-vis';
-import {csv} from 'd3-request'
+//import {csv} from 'd3-request'
 import * as axios from 'axios'
 
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -195,6 +195,7 @@ class App extends Component {
         .catch(function (error) {
           console.log(error);
         });
+
     }.bind(this);
 
     func2();
@@ -211,27 +212,47 @@ class App extends Component {
     }
 
   componentDidMount() {
-    csv('./mesh.csv', (error, data) => {
-        let parsedData = {};
-        data.map( (d) => {
-          parsedData[d.c] = parsedData[d.c] || [];
-          return parsedData[d.c].push({x: Number(d.px), y: Number(d.py)})
-        });
-
-        let xDomain = [], yDomain = []; // calculate the global domain of the mesh
-        xDomain.push( 0.9*Math.min(...data.map( (d) => Number(d.px))) );
-        xDomain.push( 1.05*Math.max(...data.map( (d) => Number(d.px))) );
-        yDomain.push( 0.9*Math.min(...data.map( (d) => Number(d.py))) );
-        yDomain.push( 1.05*Math.max(...data.map( (d) => Number(d.py))) );
-
-        // by default, query all data
-        let q = {};
-        for(let k of Object.keys(parsedData)) {
-          q[k] = true;
+    // TODO more efficient way to parse data
+    let parseData = function(rawdata) {
+      let data = [];
+      let dim = rawdata.schema.length;
+      for(let count = 0; count < rawdata.pointcloud.length; count ++) {
+        let row = {};
+        for(let i = 0; i < dim; i ++) {
+          row[rawdata.schema[i]] = rawdata.pointcloud[count][i];
         }
+        data.push(row);
+      }
 
-        this.setState({mesh: parsedData, mesh_domain:{xDomain: xDomain, yDomain: yDomain}, query: q});
-        this.queryPersistenceDiagram();
+      let parsedData = {};
+      data.map( (d) => {
+        parsedData[d.c] = parsedData[d.c] || [];
+        return parsedData[d.c].push({x: Number(d.px), y: Number(d.py)})
+      });
+
+      let xDomain = [], yDomain = []; // calculate the global domain of the mesh
+      xDomain.push( 0.9*Math.min(...data.map( (d) => Number(d.px))) );
+      xDomain.push( 1.05*Math.max(...data.map( (d) => Number(d.px))) );
+      yDomain.push( 0.9*Math.min(...data.map( (d) => Number(d.py))) );
+      yDomain.push( 1.05*Math.max(...data.map( (d) => Number(d.py))) );
+
+      // by default, query all data
+      let q = {};
+      for(let k of Object.keys(parsedData)) {
+        q[k] = true;
+      }
+
+      this.setState({mesh: parsedData, mesh_domain:{xDomain: xDomain, yDomain: yDomain}, query: q});
+      this.queryPersistenceDiagram();
+    }.bind(this);
+
+    // query for original point cloud
+    axios.get('http://localhost:8800/pointcloud')
+      .then(function (response) {
+        parseData(response.data);
+      })
+      .catch(function (error) {
+        console.log(error);
       });
   }
 

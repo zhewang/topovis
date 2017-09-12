@@ -28,6 +28,7 @@ static const char *s_http_port = "8800";
 static struct mg_serve_http_opts s_http_server_opts;
 
 Points gPoints;
+ATTRS gAttrs;
 std::map<int, int> gVertex_map;
 std::map<int, BMatrix> TOPOCUBES;
 SimplicialComplex gSC;
@@ -58,6 +59,7 @@ void loadCSV(std::string filePath, Points &points, std::map<int, int> &vertex_ma
     attrs.push_back(a);
   }
 
+  gAttrs = attrs;
   csvfile.close();
 }
 
@@ -204,6 +206,9 @@ json compute_persistence_homology(json data)
 }
 
 json queryCategories(std::vector<int> q) {
+  if(q.size() == 0) {
+    return "";
+  }
   // build a cover
   Cover c(gSC, q, TOPOCUBES); // Cover read simplex ids from saved bm and calculate the intersection
   // fetch bm from cubes (need to assign subcomplex ID) and calculate bm for intersection
@@ -269,6 +274,28 @@ static void handle_query_call2(struct mg_connection *c, struct http_message *hm)
   sendMSG(c, result.dump());
 }
 
+static void handle_query_pointcloud(struct mg_connection *c, struct http_message *hm) {
+  json pcloud;
+  for(int i = 0; i < gPoints.size(); i ++) {
+    json point;
+
+    for(int d = 0; d < gPoints[i].dim(); d ++) {
+      point.push_back(gPoints[i][d]);
+    }
+
+    for(auto & e: gAttrs[i]) {
+      point.push_back(e);
+    }
+
+    pcloud.push_back(point);
+  }
+
+  json data = {};
+  data["schema"] = {"px", "py", "c"};
+  data["pointcloud"] = pcloud;
+  sendMSG(c, data.dump());
+}
+
 static void ev_handler(struct mg_connection *c, int ev, void *ev_data) {
   struct http_message *hm = (struct http_message *) ev_data;
 
@@ -278,6 +305,8 @@ static void ev_handler(struct mg_connection *c, int ev, void *ev_data) {
         handle_query_call(c, hm); /* Handle RESTful call */
       } else if (mg_vcmp(&hm->uri, "/query2") == 0) {
         handle_query_call2(c, hm);
+      } else if (mg_vcmp(&hm->uri, "/pointcloud") == 0) {
+        handle_query_pointcloud(c, hm);
       } else {
         sendMSG(c, "TopoCubes server is running!");
       }
@@ -294,10 +323,8 @@ int main(int argc, char *argv[]) {
   }
 
   // build the cubes
-  ATTRS attrs;
-  //std::map<int,int> vertex_map;
-  loadCSV(argv[1], gPoints, gVertex_map, attrs);
-  BuildCube(gPoints, attrs, TOPOCUBES);
+  loadCSV(argv[1], gPoints, gVertex_map, gAttrs);
+  BuildCube(gPoints, gAttrs, TOPOCUBES);
 
   // TODO build nanocubes for "ordinary" data exploration
 
