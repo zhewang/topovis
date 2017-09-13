@@ -8,17 +8,23 @@ SimplicialComplex::SimplicialComplex() {
 SimplicialComplex::SimplicialComplex
 (std::vector<Simplex> &faces, bool from_faces) {
     if(from_faces) {
-        std::set<Simplex, global_compare> face_set(faces.begin(), faces.end());
+        //std::set<Simplex, global_compare> face_set(faces.begin(), faces.end());
+        std::set<Simplex, global_compare> face_set;
 
-        for(auto it = faces.begin(); it != faces.end(); it ++) {
-            if(it->dim() > 0) {
-                std::vector<Simplex> face_to_add = it->faces();
-                // TODO also need to insert face's faces
-                for(auto it_inner = face_to_add.begin();
-                    it_inner != face_to_add.end(); it_inner ++) {
-                    face_set.insert(*it_inner);
-                }
+        std::vector<Simplex> queue = faces;
+        while(queue.size() > 0) {
+          auto e = queue.back();
+          queue.pop_back();
+          face_set.insert(e);
+
+          if(e.dim() > 0) {
+            std::vector<Simplex> face_to_add = e.faces();
+            for(auto it_inner = face_to_add.begin();
+                it_inner != face_to_add.end(); it_inner ++) {
+              face_set.insert(*it_inner);
+              queue.push_back(*it_inner);
             }
+          }
         }
 
         // TODO use move_iterator for better performance
