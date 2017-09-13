@@ -1,0 +1,53 @@
+#ifndef TOPOCUBES_H
+#define TOPOCUBES_H
+
+#include <iostream>
+#include <algorithm>
+#include <iterator>
+#include <ctime>
+#include <typeinfo>
+#include <cstdlib>
+#include <fstream>
+#include <string>
+#include <vector>
+#include <map>
+
+#include "json.hpp"
+
+#include "geometry/covertree.h"
+
+#include "topology/persistence.h"
+#include "topology/sparse_rips_filtration.h"
+#include "topology/rips_filtration.h"
+#include "topology/simplicial_complex.h"
+
+
+using json = nlohmann::json;
+
+typedef std::vector<std::vector<double> > ATTRS;
+
+class TopoCubes {
+  public:
+    TopoCubes();
+    TopoCubes(std::string csvFilePath, int max_d);
+    void BuildCube();
+
+    // query API
+    json getOriginalPointCloud();
+    json queryCategories(json q);
+
+  private:
+    SimplicialComplex getSubComplex(std::vector<int> &ids);
+    std::map<int, std::vector<int> > get_category_map(int offset /*which attibute to use*/);
+
+    std::vector<int> parseQuery(json q);
+
+    int max_d;
+    Points points;
+    ATTRS attrs;
+    std::map<int, int> vertex_map;
+    std::map<int, BMatrix> cubes;
+    SimplicialComplex global_complex;
+};
+
+#endif

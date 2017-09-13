@@ -19,133 +19,14 @@
 #include "topology/rips_filtration.h"
 #include "topology/simplicial_complex.h"
 
+#include "topocubes.h"
 
 using json = nlohmann::json;
-
-typedef std::vector<std::vector<double> > ATTRS;
 
 static const char *s_http_port = "8800";
 static struct mg_serve_http_opts s_http_server_opts;
 
-Points gPoints;
-ATTRS gAttrs;
-std::map<int, int> gVertex_map;
-std::map<int, BMatrix> TOPOCUBES;
-SimplicialComplex gSC;
-
-void loadCSV(std::string filePath, Points &points, std::map<int, int> &vertex_map, ATTRS &attrs);
-void BuildCube(Points &points, ATTRS &attrs, std::map<int, BMatrix> &naiveCubes);
-std::map<std::string, std::vector<int> > get_quadtree_map(Points &points);
-SimplicialComplex getSubComplex(SimplicialComplex &global, std::vector<int> &ids);
-std::map<int, std::vector<int> > get_category_map(Points &points, ATTRS &attrs, int offset);
-
-
-void loadCSV(std::string filePath, Points &points, std::map<int, int> &vertex_map, ATTRS &attrs) {
-  ifstream csvfile;
-  csvfile.open(filePath);
-
-  std::string header;
-  double x,y,c;
-  std::getline(csvfile, header);
-  while(csvfile >> x >> y >> c) {
-    vector<double> p, a;
-    p.push_back(x);
-    p.push_back(y);
-    points.push_back(Vector(p));
-
-    vertex_map[points.size()-1] = c;
-
-    a.push_back(c);
-    attrs.push_back(a);
-  }
-
-  gAttrs = attrs;
-  csvfile.close();
-}
-
-SimplicialComplex getSubComplex(SimplicialComplex &global, std::vector<int> &ids) {
-  std::vector<Simplex> subComplex;
-  for(auto it = global.allSimplicis.begin(); it != global.allSimplicis.end(); it ++) {
-    if( std::find(ids.begin(), ids.end(), it->min_vertex()) != ids.end() ) {
-      subComplex.push_back(*it);
-    }
-  }
-  return SimplicialComplex(subComplex, true);
-}
-
-void BuildCube(Points &points, ATTRS &attrs, std::map<int, BMatrix> &naiveCubes) {
-    //auto vmap = get_quadtree_map(points);
-    auto vmap = get_category_map(points, attrs, 0);
-
-    Filtration* filtration = new RipsFiltration(points, 2);
-    //Filtration* filtration = new SparseRipsFiltration(points, 2, 1.0/3);
-    filtration->build_filtration();
-    gSC = filtration->get_complex();
-
-    global_compare::order_map = gSC.get_simplex_map();
-
-    auto globalIDMap = gSC.get_simplex_map();
-
-    for( auto it = vmap.begin(); it != vmap.end(); it ++) {
-      auto s = getSubComplex(gSC, it->second);
-      auto bm = PersistentHomology::compute_matrix(s, globalIDMap);
-      // save bm to cubes
-      naiveCubes[it->first] = bm;
-    }
-}
-
-std::map<int, std::vector<int> > get_category_map(Points &points, ATTRS &attrs, int offset) {
-    std::map<int, std::vector<int> > vmap;
-    for(int i = 0; i < points.size(); i ++) {
-      int key = attrs[i][offset];
-      if(vmap.find(key) == vmap.end()) vmap[key] = std::vector<int>();
-      vmap[key].push_back(i);
-    }
-    return vmap;
-}
-
-// divide current 2D space into 4 bins
-std::map<std::string, std::vector<int> > get_quadtree_map(Points &points) {
-    // get the range of data
-    int xmin, xmax, ymin, ymax;
-    xmin = ymin = 65535;
-    xmax = ymax = -1;
-
-    for(auto & p : points) {
-        if(p[0] < xmin) xmin = p[0];
-        if(p[0] > xmax) xmax = p[0];
-        if(p[1] < ymin) ymin = p[1];
-        if(p[1] > ymax) ymax = p[1];
-    }
-
-    int xmid = (xmin+xmax)/2.0;
-    int ymid = (ymin+ymax)/2.0;
-    // top-left bin: 00, top-right bin: 10, bottom-left bin: 01, bottom-right bin: 11
-    std::map<std::string, std::vector<int> > vmap;
-    for(int i = 0; i < 4; i ++) { vmap[std::to_string(i)] = std::vector<int>(); }
-    int id = 0;
-    for(auto & p : points) {
-        if(p[0] <= xmid) { // left parts
-            if(p[1] <= ymid) {// bottom parts
-                //vmap[id] = 1;
-                vmap["1"].push_back(id);
-            } else { // top parts
-                //vmap[id] = 0;
-                vmap["0"].push_back(id);
-            }
-        } else { // right parts
-            if(p[1] <= ymid) {// bottom parts
-                //vmap[id] = 3;
-                vmap["3"].push_back(id);
-            } else { // top parts
-                //vmap[id] = 2;
-                vmap["2"].push_back(id);
-            }
-        }
-        id ++;
-    }
-    return vmap;
-}
+TopoCubes CUBES;
 
 void read_points_from_json(json& data, Points& points, std::map<int, int> &vertex_map)
 {
@@ -205,35 +86,6 @@ json compute_persistence_homology(json data)
     return result.str();
 }
 
-json queryCategories(std::vector<int> q) {
-  if(q.size() == 0) {
-    return "";
-  }
-  // build a cover
-  Cover c(gSC, q, TOPOCUBES); // Cover read simplex ids from saved bm and calculate the intersection
-  // fetch bm from cubes (need to assign subcomplex ID) and calculate bm for intersection
-  BMatrix reduction = PersistentHomology::compute_matrix(c, TOPOCUBES);
-
-  //std::cout << "reading PD..." << std::endl;
-  // read pd
-  PersistenceDiagram pd =
-    //PersistentHomology::read_persistence_diagram(TOPOCUBES[0], gSC);
-    PersistentHomology::read_persistence_diagram(reduction, gSC);
-
-  pd.sort_pairs_by_persistence();
-
-  std::stringstream result;
-  for(unsigned i = 0; i < pd.num_pairs(); i++)  {
-    PersistentPair pairing = pd.get_pair(i);
-    //printf("%u %.7f %.7f\n", pairing.dim(), pairing.birth_time(), pairing.death_time());
-    result << pairing.dim() << " "
-      << pairing.birth_time() << " "
-      << pairing.death_time() << "\n";
-  }
-
-  return result.str();
-}
-
 static void sendMSG(struct mg_connection *c, std::string msg) {
   const std::string sep = "\r\n";
 
@@ -252,48 +104,20 @@ static void handle_query_call(struct mg_connection *c, struct http_message *hm) 
   json q = json::parse(string(hm->body.p, hm->body.len));
   json result = compute_persistence_homology(q);
 
-  /* Send result */
   sendMSG(c, result.dump());
-}
-
-std::vector<int> parseQuery(json q) {
-  std::vector<int> parsed;
-  for (json::iterator it = q.begin(); it != q.end(); ++it) {
-    parsed.push_back(*it);
-  }
-  return parsed;
 }
 
 static void handle_query_call2(struct mg_connection *c, struct http_message *hm) {
 
   json query = json::parse(string(hm->body.p, hm->body.len));
-  std::vector<int> q = parseQuery(query);
-  json result = queryCategories(q);
+  json result = CUBES.queryCategories(query);
 
-  /* Send result */
   sendMSG(c, result.dump());
 }
 
 static void handle_query_pointcloud(struct mg_connection *c, struct http_message *hm) {
-  json pcloud;
-  for(int i = 0; i < gPoints.size(); i ++) {
-    json point;
-
-    for(int d = 0; d < gPoints[i].dim(); d ++) {
-      point.push_back(gPoints[i][d]);
-    }
-
-    for(auto & e: gAttrs[i]) {
-      point.push_back(e);
-    }
-
-    pcloud.push_back(point);
-  }
-
-  json data = {};
-  data["schema"] = {"px", "py", "c"};
-  data["pointcloud"] = pcloud;
-  sendMSG(c, data.dump());
+  json pcloud = CUBES.getOriginalPointCloud();
+  sendMSG(c, pcloud.dump());
 }
 
 static void ev_handler(struct mg_connection *c, int ev, void *ev_data) {
@@ -323,10 +147,7 @@ int main(int argc, char *argv[]) {
   }
 
   // build the cubes
-  loadCSV(argv[1], gPoints, gVertex_map, gAttrs);
-  BuildCube(gPoints, gAttrs, TOPOCUBES);
-
-  // TODO build nanocubes for "ordinary" data exploration
+  CUBES = TopoCubes(argv[1], 2);
 
   // start serving
   struct mg_mgr mgr;
@@ -341,7 +162,6 @@ int main(int argc, char *argv[]) {
   for (;;) {
     mg_mgr_poll(&mgr, 1000);
   }
-
 
   mg_mgr_free(&mgr);
 

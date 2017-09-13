@@ -7,7 +7,7 @@ include_directories(${persistence_SOURCE_DIR})
 
 subdirs(geometry topology)
 
-add_executable(toposerver toposerver.cc mongoose.c)
+add_executable(toposerver toposerver.cc mongoose.c topocubes.cc)
 target_link_libraries( toposerver topology geometry ANN )
 
 add_executable(example_gen example_gen.cc)
