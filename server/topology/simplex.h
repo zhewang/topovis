@@ -16,6 +16,7 @@ class Simplex  {
 	public:
 		Simplex();
 		Simplex(const std::vector<int> & _simplex, MetricSpace* _metricSpace);
+		Simplex(const std::vector<int> & _simplex, double _distance);
 		~Simplex();
 
 		int dim() const { return simplex.size()-1; }
@@ -23,16 +24,7 @@ class Simplex  {
 		int min_vertex() const { return *std::min_element(simplex.begin(), simplex.end()); }
 		double get_simplex_distance() const { return cached_distance; }
 
-		MetricSpace* get_metric_space() { return this->metric_space; }
-
-		void compute_simplex_distance()  {
-			for(unsigned i = 0; i < simplex.size(); i++)  {
-				for(unsigned j = 0; j < i; j++)  {
-					double next_dist = metric_space->distance(simplex[i],simplex[j]);
-					cached_distance = next_dist > cached_distance ? next_dist : cached_distance;
-				}
-			}
-		}
+		//MetricSpace* get_metric_space() { return this->metric_space; }
 
 		std::string id() const {
 			return uid;
@@ -90,10 +82,19 @@ class Simplex  {
 		}
 
 	private:
+		void compute_simplex_distance()  {
+			for(unsigned i = 0; i < simplex.size(); i++)  {
+				for(unsigned j = 0; j < i; j++)  {
+					double next_dist = metric_space->distance(simplex[i],simplex[j]);
+					cached_distance = next_dist > cached_distance ? next_dist : cached_distance;
+				}
+			}
+		}
+
 		std::vector<int> simplex;
 		MetricSpace* metric_space;
 		double cached_distance;
-        std::string uid;
+    std::string uid;
 };
 
 

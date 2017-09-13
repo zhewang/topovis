@@ -77,8 +77,8 @@ void BuildCube(Points &points, ATTRS &attrs, std::map<int, BMatrix> &naiveCubes)
     //auto vmap = get_quadtree_map(points);
     auto vmap = get_category_map(points, attrs, 0);
 
-    //Filtration* filtration = new RipsFiltration(points, 2);
-    Filtration* filtration = new SparseRipsFiltration(points, 2, 1.0/3);
+    Filtration* filtration = new RipsFiltration(points, 2);
+    //Filtration* filtration = new SparseRipsFiltration(points, 2, 1.0/3);
     filtration->build_filtration();
     gSC = filtration->get_complex();
 

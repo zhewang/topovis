@@ -175,8 +175,8 @@ bool SparseRipsFiltration::build_filtration()  {
 	bf_bk.dump_time();
 	*/
 
-	for(int s = 0; s < all_simplices.size(); s++)
-		all_simplices[s].compute_simplex_distance();
+	//for(int s = 0; s < all_simplices.size(); s++)
+		//all_simplices[s].compute_simplex_distance();
 	std::sort(all_simplices.begin(), all_simplices.end());
 
 	std::vector<int> simplex_count(this->maxD()+1,0);

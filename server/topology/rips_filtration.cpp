@@ -77,8 +77,9 @@ bool RipsFiltration::build_filtration()  {
 	for(int i = 0; i < num_points; i++)
 		all_vertices.insert(i);
 	this->global_bron_kerbosch(&all_simplices, std::vector<int>(), all_vertices, this->maxD());
-	for(int s = 0; s < all_simplices.size(); s++)
-		all_simplices[s].compute_simplex_distance();
+  // distance is already computed by default
+	//for(int s = 0; s < all_simplices.size(); s++)
+		//all_simplices[s].compute_simplex_distance();
 	std::sort(all_simplices.begin(), all_simplices.end());
 
 	std::vector<int> simplex_count(this->maxD()+1,0);
