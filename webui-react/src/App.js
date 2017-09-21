@@ -77,7 +77,7 @@ class MeshPlot extends Component {
       <div className="MeshPlot" style={defaultStyle}>
         <XYPlot height={this.props.height} width={this.props.width} xDomain={this.props.xDomain} yDomain={this.props.yDomain}>
           {Object.keys(this.props.data).map(
-            (k) => <MarkSeries key={k} data={this.props.data[k]} color={classPalate[k]}/>
+            (k) => <MarkSeries key={k} data={this.props.data[k]} color={classPalate[k]} size={this.props.size}/>
           )}
         </XYPlot>
       </div>
@@ -268,6 +268,7 @@ class App extends Component {
           data={queriedMesh || []}
           xDomain={this.state.mesh_domain.xDomain}
           yDomain={this.state.mesh_domain.yDomain}
+          size={10}
           />
         </div>
       </div>
