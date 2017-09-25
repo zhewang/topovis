@@ -13,6 +13,7 @@ class GeneralizedMetricSpace : public MetricSpace {
 
 	private:
 		double** distances;
+    int numPoints;
 };
 
 #endif

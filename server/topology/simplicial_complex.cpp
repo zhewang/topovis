@@ -6,19 +6,19 @@ SimplicialComplex::SimplicialComplex() {
 }
 
 SimplicialComplex::SimplicialComplex
-(std::vector<Simplex> &faces, bool from_faces) {
+(std::vector<Simplex> &faces, bool from_faces, double** distances) {
     if(from_faces) {
         //std::set<Simplex, global_compare> face_set(faces.begin(), faces.end());
-        std::set<Simplex, global_compare> face_set;
+        std::set<Simplex> face_set;
 
         std::vector<Simplex> queue = faces;
         while(queue.size() > 0) {
           auto e = queue.back();
-          queue.pop_back();
           face_set.insert(e);
+          queue.pop_back();
 
           if(e.dim() > 0) {
-            std::vector<Simplex> face_to_add = e.faces();
+            std::vector<Simplex> face_to_add = e.faces(distances);
             for(auto it_inner = face_to_add.begin();
                 it_inner != face_to_add.end(); it_inner ++) {
               face_set.insert(*it_inner);
@@ -51,4 +51,19 @@ void SimplicialComplex::print() const {
         std::cout << "{" << this->allSimplicis[i] << "}";
     }
     std::cout << " }" << std::endl;
+}
+
+std::vector<Simplex> SimplicialComplex::cofacesOf(Simplex s) {
+  // TODO need special data structure so finding cofaces could be faster
+  std::vector<Simplex> cofaces;
+  cofaces.push_back(s);
+  for(auto & e: this->allSimplicis) {
+    if(e.dim() > s.dim()) {
+      auto faces = e.faces();
+      if(std::find(faces.begin(), faces.end(), s) != faces.end()) {
+        cofaces.push_back(e);
+      }
+    }
+  }
+  return cofaces;
 }

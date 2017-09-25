@@ -10,27 +10,37 @@
 #include <map>
 
 #include "metric_space.h"
+#include "../geometry/point_incs.h"
 
 
 class Simplex  {
 	public:
 		Simplex();
 		Simplex(const std::vector<int> & _simplex, MetricSpace* _metricSpace);
-		Simplex(const std::vector<int> & _simplex, double _distance);
+		Simplex(const std::vector<int> & _simplex, Points &points);
+    Simplex(const std::vector<int> & _simplex, double _distance);
 		~Simplex();
 
 		int dim() const { return simplex.size()-1; }
 		int vertex(int _i) const { return simplex[_i]; }
 		int min_vertex() const { return *std::min_element(simplex.begin(), simplex.end()); }
 		double get_simplex_distance() const { return cached_distance; }
+    std::vector<int> as_vector() { return simplex;};
 
-		//MetricSpace* get_metric_space() { return this->metric_space; }
+    //MetricSpace* get_metric_space() { return this->metric_space; }
+
+    // XXX temporary solution, very dangerous! We assume only new points are added
+    // and old points are in the same order as before.
+    void update_metric_space(MetricSpace* new_metric) {
+      // TODO metric_space not being freed properly
+      this->metric_space = new_metric;
+    }
 
 		std::string id() const {
 			return uid;
 		}
 
-		std::vector<Simplex> faces();
+		std::vector<Simplex> faces(double** distances=NULL);
 
 		inline bool operator==(const Simplex& _simp) const {
             return this->simplex == _simp.simplex;
@@ -90,6 +100,16 @@ class Simplex  {
 				}
 			}
 		}
+
+		void compute_simplex_distance_from_points(Points &points) {
+      for(unsigned i = 0; i < simplex.size(); i++)  {
+        for(unsigned j = 0; j < i; j++)  {
+          double next_dist = (points[simplex[i]] - points[simplex[j]]).l2Norm();
+          cached_distance = next_dist > cached_distance ? next_dist : cached_distance;
+        }
+      }
+    }
+
 
 		std::vector<int> simplex;
 		MetricSpace* metric_space;

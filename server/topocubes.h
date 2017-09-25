@@ -20,6 +20,7 @@
 #include "topology/sparse_rips_filtration.h"
 #include "topology/rips_filtration.h"
 #include "topology/simplicial_complex.h"
+#include "topology/generalized_metric_space.h"
 
 
 using json = nlohmann::json;
@@ -40,10 +41,15 @@ class TopoCubes {
     SimplicialComplex getSubComplex(std::vector<int> &ids);
     std::map<int, std::vector<int> > get_category_map(int offset /*which attibute to use*/);
 
+    std::vector<int> vector_replace( const std::vector<int> v, int old_value, int new_value);
+    void subdivision();
+    int getVertexLabel(int index) { return index < originalPointsSize ? vertex_map[index] : -1; };
+
     std::vector<int> parseQuery(json q);
 
     int max_d;
     Points points;
+    int originalPointsSize;
     ATTRS attrs;
     std::map<int, int> vertex_map;
     std::map<int, BMatrix> cubes;

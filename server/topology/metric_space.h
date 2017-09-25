@@ -4,7 +4,7 @@
 class MetricSpace  {
 	public:
 		MetricSpace(int _numPoints);
-		~MetricSpace();
+		virtual ~MetricSpace();
 
 		virtual double distance(int _i, int _j) = 0;
 
