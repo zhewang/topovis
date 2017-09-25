@@ -144,48 +144,55 @@ std::vector<int> TopoCubes::vector_replace( const std::vector<int> v, int old_va
 }
 
 void TopoCubes::subdivision() {
-  auto & original = this->global_complex.allSimplicis;
-  std::set<Simplex> newSC;
+  auto queue = this->global_complex.allSimplicis;
+  std::set<Simplex, lex_compare> newSC;
 
-  while(original.size() > 0) {
-    //this->global_complex.print();
-    auto s = original.back();
-    original.pop_back();
-    //std::cout << s << std::endl;
+  while(queue.size() > 0) {
+    auto s = queue.back();
+    queue.pop_back();
+
     // only split on edges
     if(s.dim() == 1 &&
        (s.vertex(0) < this->originalPointsSize && s.vertex(1) < this->originalPointsSize) &&
        (this->vertex_map[s.vertex(0)] != this->vertex_map[s.vertex(1)]) ) {
-      // find all cofaces of the edge
-      //std::cout << "should split\n";
-      std::vector<Simplex> cofaces = this->global_complex.cofacesOf(s);
+        // find all cofaces of the edge
+        //std::cout << "should split\n";
+        std::vector<Simplex> cofaces = this->global_complex.cofacesOf(s);
 
-      Vector v1 = this->points[s.vertex(0)];
-      Vector v2 = this->points[s.vertex(1)];
-      Vector spoint = (v1+v2)*0.5;
-      this->points.push_back(spoint);
-      int spoint_id = this->points.size()-1;
-      //std::cout << "insert new point: " << spoint_id << std::endl;
+        Vector v1 = this->points[s.vertex(0)];
+        Vector v2 = this->points[s.vertex(1)];
+        Vector spoint = (v1+v2)*0.5;
+        this->points.push_back(spoint);
+        int spoint_id = this->points.size()-1;
 
-      //std::cout << "processing cofaces\n";
-      for(auto & cf : cofaces) {
-        //std::cout << "coface: " << cf << std::endl;
+        for(auto & cf : cofaces) {
+          // delete coface from complex
+          this->global_complex.deleteSimplex(cf);
 
-        std::vector<int> v = cf.as_vector();
-        std::vector<int> insert1 = vector_replace(v, s.vertex(0), spoint_id);
-        std::vector<int> insert2 = vector_replace(v, s.vertex(1), spoint_id);
+          std::vector<int> v = cf.as_vector();
+          std::vector<int> insert1 = vector_replace(v, s.vertex(0), spoint_id);
+          std::vector<int> insert2 = vector_replace(v, s.vertex(1), spoint_id);
 
-        //std::cout << "creating new simplexes\n";
-        auto new1 = Simplex(insert1, this->points);
-        auto new2 = Simplex(insert2, this->points);
-        //std::cout << new1 << " || " << new2 << std::endl;
-        original.push_back(new1);
-        original.push_back(new2);
-      }
+          auto new1 = Simplex(insert1, this->points);
+          auto new2 = Simplex(insert2, this->points);
+
+          queue.push_back(new1);
+          queue.push_back(new2);
+
+          if(cf.dim() > 1) { //this is not an edge, include it in complex so that cofaces could include newly inserted ones
+            this->global_complex.allSimplicis.push_back(new1);
+            this->global_complex.allSimplicis.push_back(new2);
+          }
+        }
     } else {
-      newSC.insert(s);
+      // if the simplex don't contain disagreeing edges then insert
+      if(agreeingSimplex(s)) {
+        newSC.insert(s);
+      }
     }
   }
+
+  auto allSimplicis = std::vector<Simplex>(newSC.begin(), newSC.end());
 
   // calculate new distances
 	int num_points = this->points.size();
@@ -199,11 +206,25 @@ void TopoCubes::subdivision() {
 		}
 	}
 
-  auto allSimplicis = std::vector<Simplex>(newSC.begin(), newSC.end());
-
+  //this->global_complex = SimplicialComplex(allSimplicis);
   this->global_complex = SimplicialComplex(allSimplicis, true, distances);
+  this->global_complex.recalculate_distances(distances);
+
   for(int i = 0; i < num_points; i ++) {
     delete distances[i];
   }
   delete [] distances;
+}
+
+bool TopoCubes::agreeingSimplex(Simplex &s) {
+  if(s.dim() == 0) return true;
+  if(s.vertex(0) >= this->originalPointsSize) return false;
+
+  int firstLabel = this->vertex_map[s.vertex(0)];
+  for(int i = 1; i < s.dim()+1; i ++) {
+    if(s.vertex(i) < this->originalPointsSize && this->vertex_map[s.vertex(i)] != firstLabel) {
+      return false;
+    }
+  }
+  return true;
 }

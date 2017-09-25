@@ -12,7 +12,7 @@ Simplex::Simplex(const std::vector<int> & _simplex, MetricSpace* _metricSpace)  
 
 	metric_space = _metricSpace;
   cached_distance = 0;
-  compute_simplex_distance();
+  //compute_simplex_distance();
 
     char unique_id[10*(simplex.size()+1)];
     sprintf(unique_id, "%u", simplex[0]);
@@ -27,7 +27,7 @@ Simplex::Simplex(const std::vector<int> & _simplex, Points &points)  {
 
 	metric_space = NULL;
   cached_distance = 0;
-  compute_simplex_distance_from_points(points);
+  //compute_simplex_distance_from_points(points);
 
   char unique_id[10*(simplex.size()+1)];
   sprintf(unique_id, "%u", simplex[0]);

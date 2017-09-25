@@ -18,6 +18,10 @@ class SimplicialComplex {
         std::map<std::string, int> get_simplex_map() const;
         void print() const;
         std::vector<Simplex> cofacesOf(Simplex s);
+        void recalculate_distances(double** distances);
+
+        // XXX keep in mind that after deletion the complex is not a complex anymore
+        void deleteSimplex(Simplex &s);
 
         // public members
         std::vector<Simplex> allSimplicis;

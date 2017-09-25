@@ -91,6 +91,15 @@ class Simplex  {
 			return out;
 		}
 
+		void compute_simplex_distance(double ** _distances)  {
+			for(unsigned i = 0; i < simplex.size(); i++)  {
+				for(unsigned j = 0; j < i; j++)  {
+					double next_dist = _distances[simplex[i]][simplex[j]];
+					cached_distance = next_dist > cached_distance ? next_dist : cached_distance;
+				}
+			}
+		}
+
 	private:
 		void compute_simplex_distance()  {
 			for(unsigned i = 0; i < simplex.size(); i++)  {

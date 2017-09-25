@@ -9,7 +9,7 @@ SimplicialComplex::SimplicialComplex
 (std::vector<Simplex> &faces, bool from_faces, double** distances) {
     if(from_faces) {
         //std::set<Simplex, global_compare> face_set(faces.begin(), faces.end());
-        std::set<Simplex> face_set;
+        std::set<Simplex, lex_compare> face_set;
 
         std::vector<Simplex> queue = faces;
         while(queue.size() > 0) {
@@ -55,15 +55,38 @@ void SimplicialComplex::print() const {
 
 std::vector<Simplex> SimplicialComplex::cofacesOf(Simplex s) {
   // TODO need special data structure so finding cofaces could be faster
+  //std::cout << "calculating cofaces" << std::endl;
   std::vector<Simplex> cofaces;
   cofaces.push_back(s);
   for(auto & e: this->allSimplicis) {
+    //std::cout << "simplex: " << e << std::endl;
     if(e.dim() > s.dim()) {
       auto faces = e.faces();
+      //for(auto & f : faces) {
+        ////std::cout << "face: " << f << std::endl;
+        //if(f.as_vector() == s.as_vector()) {
+          //cofaces.push_back(e);
+        //}
+      //}
       if(std::find(faces.begin(), faces.end(), s) != faces.end()) {
         cofaces.push_back(e);
       }
     }
   }
   return cofaces;
+}
+
+void SimplicialComplex::recalculate_distances(double** distances) {
+  for(auto &e : allSimplicis) {
+    e.compute_simplex_distance(distances);
+  }
+}
+
+void SimplicialComplex::deleteSimplex(Simplex &s) {
+  for(auto it = allSimplicis.begin(); it != allSimplicis.end(); it ++) {
+    if (*it == s) {
+      allSimplicis.erase(it);
+      return;
+    }
+  }
 }

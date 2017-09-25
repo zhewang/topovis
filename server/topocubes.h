@@ -43,6 +43,7 @@ class TopoCubes {
 
     std::vector<int> vector_replace( const std::vector<int> v, int old_value, int new_value);
     void subdivision();
+    bool agreeingSimplex(Simplex &s);
     int getVertexLabel(int index) { return index < originalPointsSize ? vertex_map[index] : -1; };
 
     std::vector<int> parseQuery(json q);
@@ -51,7 +52,7 @@ class TopoCubes {
     Points points;
     int originalPointsSize;
     ATTRS attrs;
-    std::map<int, int> vertex_map;
+    std::map<int, int> vertex_map; // vertex id -> category id
     std::map<int, BMatrix> cubes;
     SimplicialComplex global_complex;
 };
