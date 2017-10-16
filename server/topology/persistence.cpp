@@ -167,6 +167,7 @@ BMatrix PersistentHomology::compute_matrix( Cover &cover, std::map<int, BMatrix>
               cols[idx].faces.push_back(BMCell(0, 0));
             } else {
               // not 0-simplex, calculate faces
+              // FIXME use a special faces() function or re-calculate distance
               std::vector<Simplex> faces = simplex.faces();
               for(int f = 0; f < faces.size(); f++)  {
                 Simplex next_face = faces[f];

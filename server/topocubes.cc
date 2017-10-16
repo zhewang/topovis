@@ -113,7 +113,7 @@ json TopoCubes::queryCategories(json query) {
 
 json TopoCubes::getOriginalPointCloud() {
   json pcloud;
-  for(int i = 0; i < this->points.size(); i ++) {
+  for(int i = 0; i < this->originalPointsSize; i ++) {
     json point;
 
     for(int d = 0; d < this->points[i].dim(); d ++) {
