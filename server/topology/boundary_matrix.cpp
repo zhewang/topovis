@@ -56,8 +56,12 @@ void BMatrix::print() {
 }
 
 std::vector<int> BMatrix::getAllSimplicis() {
+  // XXX should not contain the inserted 0
+  // TODO more efficient implementation
   std::vector<int> simplicis;
+  BMCell zero(0,0);
   for(auto &c : cols) {
+    if(c.header == zero) continue;
     simplicis.push_back(c.header.first);
   }
   return simplicis;

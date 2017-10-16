@@ -78,7 +78,9 @@ std::vector<Simplex> SimplicialComplex::cofacesOf(Simplex s) {
 
 void SimplicialComplex::recalculate_distances(double** distances) {
   for(auto &e : allSimplicis) {
-    e.compute_simplex_distance(distances);
+    if(e.get_simplex_distance() == -1) {
+      e.compute_simplex_distance(distances);
+    }
   }
 }
 

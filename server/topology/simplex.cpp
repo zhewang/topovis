@@ -11,7 +11,7 @@ Simplex::Simplex(const std::vector<int> & _simplex, MetricSpace* _metricSpace)  
 	std::sort(simplex.begin(), simplex.end());
 
 	metric_space = _metricSpace;
-  cached_distance = 0;
+  cached_distance = -1;
   //compute_simplex_distance();
 
     char unique_id[10*(simplex.size()+1)];
@@ -26,7 +26,7 @@ Simplex::Simplex(const std::vector<int> & _simplex, Points &points)  {
 	std::sort(simplex.begin(), simplex.end());
 
 	metric_space = NULL;
-  cached_distance = 0;
+  cached_distance = -1;
   //compute_simplex_distance_from_points(points);
 
   char unique_id[10*(simplex.size()+1)];

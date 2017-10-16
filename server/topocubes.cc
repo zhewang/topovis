@@ -208,6 +208,7 @@ void TopoCubes::subdivision() {
 
   //this->global_complex = SimplicialComplex(allSimplicis);
   this->global_complex = SimplicialComplex(allSimplicis, true, distances);
+  //XXX newly inserted faces don't have distance
   this->global_complex.recalculate_distances(distances);
 
   for(int i = 0; i < num_points; i ++) {
