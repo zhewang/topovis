@@ -132,7 +132,7 @@ class PersistanceDiagram extends Component {
           <YAxis />
           <LineSeries data={[{x:0, y:0}, {x:maxValue, y:maxValue}]} color='#636363' />
           {Object.keys(this.props.data).map( (k) =>
-            <MarkSeries data={this.props.data[k]} key={k} />
+            <MarkSeries data={this.props.data[k]} key={k} size={this.props.size} opacity={0.3}/>
           )}
         </XYPlot>
       </div>
@@ -214,20 +214,21 @@ class App extends Component {
 
       for(let i = 1; i < lines.length; i ++) {
         let l = lines[i].split(',');
-        if(l.length != 3) continue;
+        if(l.length < 3) continue;
         parsedData.push({x: Number(l[0]), y: Number(l[1])});
       }
 
       this.setState({
         mesh: parsedData,
-        query: {},
+        query: {1:true},
         pd: {0:[{x:1, y:2}], 1:[{x:2, y:3}]},
         redshift: [{x:1, y:1}, {x:10, y:1}],
       });
+      this.queryPersistenceDiagram();
     }.bind(this);
 
     // query for original point cloud
-    axios.get('data.csv')
+    axios.get('lss_data.csv')
       .then(function (response) {
         parseData(response.data);
       })
@@ -247,7 +248,7 @@ class App extends Component {
           <ScatterPlot
           height={500} width={600}
           data={queriedMesh || []}
-          size={1}
+          size={2}
           />
         </div>
       </div>
@@ -266,7 +267,7 @@ class App extends Component {
       <div className="panel panel-default">
         <div className="panel-heading">Persistance Diagram</div>
         <div className="panel-body">
-          <PersistanceDiagram data={this.state.pd} height={300} width={300}/>
+          <PersistanceDiagram data={this.state.pd} height={300} width={300} size={1}/>
         </div>
       </div>
     );

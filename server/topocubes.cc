@@ -1,28 +1,28 @@
 #include "topocubes.h"
+#include "csv.h"
 
 TopoCubes::TopoCubes() {
 }
 
 TopoCubes::TopoCubes(std::string filePath, int _max_d) {
-  ifstream csvfile;
-  csvfile.open(filePath);
-
-  std::string header;
-  double x,y,c;
-  std::getline(csvfile, header);
-  while(csvfile >> x >> y >> c) {
+  io::CSVReader<6> in(filePath);
+  in.read_header(io::ignore_extra_column, "ra", "dec", "z_photoz", "x", "y", "z");
+  double ra, dec, redshift, x, y, z;
+  while(in.read_row(ra, dec, redshift, x, y ,z)){
     vector<double> p, a;
     p.push_back(x);
     p.push_back(y);
+    p.push_back(z);
     this->points.push_back(Vector(p));
 
+    // TODO calculate c
+    double c = 1;
     this->vertex_map[points.size()-1] = c;
 
     a.push_back(c);
     this->attrs.push_back(a);
   }
 
-  csvfile.close();
   this->max_d = _max_d;
   this->originalPointsSize = this->points.size();
 
@@ -40,11 +40,12 @@ void TopoCubes::BuildCube() {
 
     subdivision();
 
-    this->global_complex.print();
+    //this->global_complex.print();
 
     auto globalIDMap = this->global_complex.get_simplex_map();
     global_compare::order_map = globalIDMap;
 
+    // TODO build hierarchical cubes: there are assembly of leaf-level cubes
     for( auto it = vmap.begin(); it != vmap.end(); it ++) {
       auto s = this->getSubComplex(it->second); // TODO special case with inserted vertices
       auto bm = PersistentHomology::compute_matrix(s, globalIDMap);
