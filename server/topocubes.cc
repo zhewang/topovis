@@ -17,6 +17,13 @@ TopoCubes::TopoCubes(std::string filePath, int _max_d) {
 
     // TODO calculate c
     double c = 1;
+    if(redshift>= 0.031 && redshift < 0.032) {
+      c = 2;
+    } else if(redshift >= 0.032 && redshift < 0.033){
+      c = 3;
+    } else {
+      c = 4;
+    }
     this->vertex_map[points.size()-1] = c;
 
     a.push_back(c);
@@ -33,8 +40,8 @@ void TopoCubes::BuildCube() {
     //auto vmap = this->get_quadtree_map(this->points);
     auto vmap = this->get_category_map(0);
 
-    Filtration* filtration = new RipsFiltration(points, this->max_d);
-    //Filtration* filtration = new SparseRipsFiltration(points, this->max_d, 1.0/3);
+    //Filtration* filtration = new RipsFiltration(points, this->max_d);
+    Filtration* filtration = new SparseRipsFiltration(points, this->max_d, 1.0/3);
     filtration->build_filtration();
     this->global_complex = filtration->get_complex();
 

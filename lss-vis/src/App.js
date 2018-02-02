@@ -131,9 +131,7 @@ class PersistanceDiagram extends Component {
           <XAxis />
           <YAxis />
           <LineSeries data={[{x:0, y:0}, {x:maxValue, y:maxValue}]} color='#636363' />
-          {Object.keys(this.props.data).map( (k) =>
-            <MarkSeries data={this.props.data[k]} key={k} size={this.props.size} opacity={0.3}/>
-          )}
+          <MarkSeries data={this.props.data[1]} size={this.props.size} opacity={0.3}/>
         </XYPlot>
       </div>
     );
@@ -220,7 +218,7 @@ class App extends Component {
 
       this.setState({
         mesh: parsedData,
-        query: {1:true},
+        query: {1:true, 2:true, 3:true, 4:true},
         pd: {0:[{x:1, y:2}], 1:[{x:2, y:3}]},
         redshift: [{x:1, y:1}, {x:10, y:1}],
       });

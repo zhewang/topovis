@@ -340,7 +340,7 @@ PersistenceDiagram PersistentHomology::read_persistence_diagram
                 Simplex birth_simplex = sc.allSimplicis[lo.first-1];
                 Simplex death_simplex = sc.allSimplicis[cu.first-1];
 
-                if(death_simplex.get_simplex_distance() == birth_simplex.get_simplex_distance())
+                if(death_simplex.get_simplex_distance() <= birth_simplex.get_simplex_distance())
                     continue;
 
                 PersistentPair persistent_pair(
