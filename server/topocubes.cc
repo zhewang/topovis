@@ -5,30 +5,52 @@ TopoCubes::TopoCubes() {
 }
 
 TopoCubes::TopoCubes(std::string filePath, int _max_d) {
-  io::CSVReader<6> in(filePath);
-  in.read_header(io::ignore_extra_column, "ra", "dec", "z_photoz", "x", "y", "z");
-  double ra, dec, redshift, x, y, z;
-  while(in.read_row(ra, dec, redshift, x, y ,z)){
-    vector<double> p, a;
-    p.push_back(x);
-    p.push_back(y);
-    p.push_back(z);
-    this->points.push_back(Vector(p));
+  auto parseSDSS = [filePath, this]() {
+    io::CSVReader<6> in(filePath);
+    in.read_header(io::ignore_extra_column, "ra", "dec", "z_photoz", "x", "y", "z");
+    double ra, dec, redshift, x, y, z;
+    while(in.read_row(ra, dec, redshift, x, y ,z)){
+      vector<double> p, a;
+      p.push_back(x);
+      p.push_back(y);
+      p.push_back(z);
+      this->points.push_back(Vector(p));
 
-    // TODO calculate c
-    double c = 1;
-    if(redshift>= 0.031 && redshift < 0.032) {
-      c = 2;
-    } else if(redshift >= 0.032 && redshift < 0.033){
-      c = 3;
-    } else {
-      c = 4;
+      // TODO calculate c
+      double c = 1;
+      if(redshift>= 0.031 && redshift < 0.032) {
+        c = 2;
+      } else if(redshift >= 0.032 && redshift < 0.033){
+        c = 3;
+      } else {
+        c = 4;
+      }
+      this->vertex_map[points.size()-1] = c;
+
+      a.push_back(c);
+      this->attrs.push_back(a);
     }
-    this->vertex_map[points.size()-1] = c;
+  };
 
-    a.push_back(c);
-    this->attrs.push_back(a);
-  }
+  auto parseTest2D = [filePath, this]() {
+    io::CSVReader<3, io::trim_chars<>, io::no_quote_escape<' '> > in(filePath);
+    in.read_header(io::ignore_extra_column, "px", "py", "c");
+    double px, py, c;
+    while(in.read_row(px, py, c)){
+      vector<double> p, a;
+      p.push_back(px);
+      p.push_back(py);
+      this->points.push_back(Vector(p));
+
+      this->vertex_map[points.size()-1] = c;
+
+      a.push_back(c);
+      this->attrs.push_back(a);
+    }
+  };
+
+  //parseSDSS();
+  parseTest2D();
 
   this->max_d = _max_d;
   this->originalPointsSize = this->points.size();
@@ -169,17 +191,23 @@ void TopoCubes::subdivision() {
 
         Vector v1 = this->points[s.vertex(0)];
         Vector v2 = this->points[s.vertex(1)];
-        Vector spoint = (v1+v2)*0.5;
-        this->points.push_back(spoint);
-        int spoint_id = this->points.size()-1;
+
+        // insert two points, one is geographically close to v1, the other is close to v2
+        Vector sv1 = v1;
+        this->points.push_back(sv1);
+        int sv1_id = this->points.size()-1;
+
+        Vector sv2 = v2;
+        this->points.push_back(sv2);
+        int sv2_id = this->points.size()-1;
 
         for(auto & cf : cofaces) {
           // delete coface from complex
           this->global_complex.deleteSimplex(cf);
 
           std::vector<int> v = cf.as_vector();
-          std::vector<int> insert1 = vector_replace(v, s.vertex(0), spoint_id);
-          std::vector<int> insert2 = vector_replace(v, s.vertex(1), spoint_id);
+          std::vector<int> insert1 = vector_replace(v, s.vertex(0), sv2_id);
+          std::vector<int> insert2 = vector_replace(v, s.vertex(1), sv1_id);
 
           auto new1 = Simplex(insert1, this->points);
           auto new2 = Simplex(insert2, this->points);
