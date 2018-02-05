@@ -69,14 +69,18 @@ void TopoCubes::BuildCube() {
 
     subdivision();
 
-    //this->global_complex.print();
+    //print points
+    //int point_count = 0;
+    //for(auto p : this->points) {
+      //std::cout << point_count ++ << ": " << p << std::endl;
+    //}
 
     auto globalIDMap = this->global_complex.get_simplex_map();
     global_compare::order_map = globalIDMap;
 
     // TODO build hierarchical cubes: there are assembly of leaf-level cubes
     for( auto it = vmap.begin(); it != vmap.end(); it ++) {
-      auto s = this->getSubComplex(it->second); // TODO special case with inserted vertices
+      auto s = this->getSubComplex(it->second);
       auto bm = PersistentHomology::compute_matrix(s, globalIDMap);
       // save bm to cubes
       this->cubes[it->first] = bm;
@@ -86,6 +90,7 @@ void TopoCubes::BuildCube() {
 SimplicialComplex TopoCubes::getSubComplex(std::vector<int> &ids) {
   std::vector<Simplex> subComplex;
   for(auto it = this->global_complex.allSimplicis.begin(); it != this->global_complex.allSimplicis.end(); it ++) {
+    // min_vertex represent this simplex's attribute
     if( std::find(ids.begin(), ids.end(), it->min_vertex()) != ids.end() ) {
       subComplex.push_back(*it);
     }
@@ -177,6 +182,7 @@ void TopoCubes::subdivision() {
   auto queue = this->global_complex.allSimplicis;
   std::set<Simplex, lex_compare> newSC;
 
+  int insertCount = this->originalPointsSize-1;
   while(queue.size() > 0) {
     auto s = queue.back();
     queue.pop_back();
@@ -186,31 +192,34 @@ void TopoCubes::subdivision() {
        (s.vertex(0) < this->originalPointsSize && s.vertex(1) < this->originalPointsSize) &&
        (this->vertex_map[s.vertex(0)] != this->vertex_map[s.vertex(1)]) ) {
         // find all cofaces of the edge
-        //std::cout << "should split\n";
         std::vector<Simplex> cofaces = this->global_complex.cofacesOf(s);
 
-        Vector v1 = this->points[s.vertex(0)];
-        Vector v2 = this->points[s.vertex(1)];
+        int v0 = s.vertex(0);
+        int v1 = s.vertex(1);
 
-        // insert two points, one is geographically close to v1, the other is close to v2
-        Vector sv1 = v1;
-        this->points.push_back(sv1);
-        int sv1_id = this->points.size()-1;
+        insertCount ++;
 
-        Vector sv2 = v2;
-        this->points.push_back(sv2);
-        int sv2_id = this->points.size()-1;
+        //std::cout << "split: " << s << " with point: " << insertCount << std::endl;
 
         for(auto & cf : cofaces) {
           // delete coface from complex
           this->global_complex.deleteSimplex(cf);
 
           std::vector<int> v = cf.as_vector();
-          std::vector<int> insert1 = vector_replace(v, s.vertex(0), sv2_id);
-          std::vector<int> insert2 = vector_replace(v, s.vertex(1), sv1_id);
 
-          auto new1 = Simplex(insert1, this->points);
-          auto new2 = Simplex(insert2, this->points);
+          std::map<int, int> loc_map1, loc_map2;
+          for(auto e : v) loc_map1[e] = cf.location(e);
+          loc_map2 = loc_map1;
+          //for(auto e : v) loc_map2[e] = cf.location(e);
+
+          std::vector<int> insert1 = vector_replace(v, v0, insertCount);
+          loc_map1[insertCount] = v1;
+
+          std::vector<int> insert2 = vector_replace(v, v1, insertCount);
+          loc_map2[insertCount] = v0;
+
+          auto new1 = Simplex(insert1, this->points, loc_map1);
+          auto new2 = Simplex(insert2, this->points, loc_map2);
 
           queue.push_back(new1);
           queue.push_back(new2);

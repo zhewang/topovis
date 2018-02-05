@@ -10,46 +10,36 @@ Simplex::Simplex(const std::vector<int> & _simplex, MetricSpace* _metricSpace)  
 	simplex = _simplex;
 	std::sort(simplex.begin(), simplex.end());
 
+  for(auto e : _simplex) this->loc_map[e] = e;
+
 	metric_space = _metricSpace;
   cached_distance = -1;
   //compute_simplex_distance();
-
-    char unique_id[10*(simplex.size()+1)];
-    sprintf(unique_id, "%u", simplex[0]);
-    for(unsigned i = 1; i < simplex.size(); i++)
-        sprintf(unique_id, "%s-%u", unique_id, simplex[i]);
-    uid = std::string(unique_id);
+  compute_uid();
 }
 
-Simplex::Simplex(const std::vector<int> & _simplex, Points &points)  {
+Simplex::Simplex(const std::vector<int> & _simplex, Points &points, std::map<int,int> _loc_map)  {
 	simplex = _simplex;
 	std::sort(simplex.begin(), simplex.end());
+
+  this->loc_map = _loc_map;
 
 	metric_space = NULL;
   cached_distance = -1;
   //compute_simplex_distance_from_points(points);
-
-  char unique_id[10*(simplex.size()+1)];
-  sprintf(unique_id, "%u", simplex[0]);
-  for(unsigned i = 1; i < simplex.size(); i++) {
-    sprintf(unique_id, "%s-%u", unique_id, simplex[i]);
-  }
-  uid = std::string(unique_id);
+  compute_uid();
 }
 
-Simplex::Simplex(const std::vector<int> & _simplex, double _distance)  {
-	simplex = _simplex;
-	std::sort(simplex.begin(), simplex.end());
+Simplex::Simplex(const std::vector<int> & _simplex, double _distance, std::map<int,int> _loc_map)  {
+  simplex = _simplex;
+  std::sort(simplex.begin(), simplex.end());
 
-	metric_space = NULL;
+  this->loc_map = _loc_map;
+
+  metric_space = NULL;
   cached_distance = _distance;
 
-  char unique_id[10*(simplex.size()+1)];
-  sprintf(unique_id, "%u", simplex[0]);
-  for(unsigned i = 1; i < simplex.size(); i++) {
-    sprintf(unique_id, "%s-%u", unique_id, simplex[i]);
-  }
-  uid = std::string(unique_id);
+  compute_uid();
 }
 
 Simplex::~Simplex()  {
@@ -64,17 +54,22 @@ std::vector<Simplex> Simplex::faces(double** distances)  {
 			new_face.push_back(next_vertex);
 		}
 
+    std::map<int,int> new_loc_map;
+    for(auto e : new_face) new_loc_map[e] = this->loc_map[e];
+
     if(distances == NULL) {
-      all_faces.push_back(Simplex(new_face,metric_space));
+      all_faces.push_back(Simplex(new_face, metric_space));
     } else {
       double new_distance = 0;
       for(unsigned i = 0; i < new_face.size(); i++)  {
         for(unsigned j = 0; j < i; j++)  {
-          double next_dist = distances[new_face[i]][new_face[j]];
+          int loc_i = this->loc_map[new_face[i]];
+          int loc_j = this->loc_map[new_face[j]];
+          double next_dist = distances[loc_i][loc_j];
           new_distance = next_dist > new_distance ? next_dist : new_distance;
         }
       }
-      all_faces.push_back(Simplex(new_face, new_distance));
+      all_faces.push_back(Simplex(new_face, new_distance, new_loc_map));
     }
 	}
 	return all_faces;

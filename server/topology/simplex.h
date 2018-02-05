@@ -17,24 +17,18 @@ class Simplex  {
 	public:
 		Simplex();
 		Simplex(const std::vector<int> & _simplex, MetricSpace* _metricSpace);
-		Simplex(const std::vector<int> & _simplex, Points &points);
-    Simplex(const std::vector<int> & _simplex, double _distance);
+		Simplex(const std::vector<int> & _simplex, Points &points, std::map<int,int> loc_map);
+    Simplex(const std::vector<int> & _simplex, double _distance, std::map<int,int> loc_map);
 		~Simplex();
 
 		int dim() const { return simplex.size()-1; }
 		int vertex(int _i) const { return simplex[_i]; }
+    int location(int _i) const { return loc_map.at(_i); }
 		int min_vertex() const { return *std::min_element(simplex.begin(), simplex.end()); }
 		double get_simplex_distance() const { return cached_distance; }
     std::vector<int> as_vector() { return simplex;};
 
     //MetricSpace* get_metric_space() { return this->metric_space; }
-
-    // XXX temporary solution, very dangerous! We assume only new points are added
-    // and old points are in the same order as before.
-    void update_metric_space(MetricSpace* new_metric) {
-      // TODO metric_space not being freed properly
-      this->metric_space = new_metric;
-    }
 
 		std::string id() const {
 			return uid;
@@ -86,7 +80,7 @@ class Simplex  {
 		friend std::ostream& operator <<(std::ostream &out, const Simplex & _simplex)  {
 			for(int i = 0; i <= _simplex.dim(); i++)  {
                 if( i > 0) { out << " "; }
-				out <<  _simplex.vertex(i);
+				out <<  _simplex.vertex(i) << "(" << _simplex.location(_simplex.vertex(i)) << ")";
 			}
 			return out;
 		}
@@ -94,7 +88,7 @@ class Simplex  {
 		void compute_simplex_distance(double ** _distances)  {
 			for(unsigned i = 0; i < simplex.size(); i++)  {
 				for(unsigned j = 0; j < i; j++)  {
-					double next_dist = _distances[simplex[i]][simplex[j]];
+					double next_dist = _distances[loc_map[simplex[i]]][loc_map[simplex[j]]];
 					cached_distance = next_dist > cached_distance ? next_dist : cached_distance;
 				}
 			}
@@ -104,7 +98,7 @@ class Simplex  {
 		void compute_simplex_distance()  {
 			for(unsigned i = 0; i < simplex.size(); i++)  {
 				for(unsigned j = 0; j < i; j++)  {
-					double next_dist = metric_space->distance(simplex[i],simplex[j]);
+					double next_dist = metric_space->distance(loc_map[simplex[i]], loc_map[simplex[j]]);
 					cached_distance = next_dist > cached_distance ? next_dist : cached_distance;
 				}
 			}
@@ -113,12 +107,24 @@ class Simplex  {
 		void compute_simplex_distance_from_points(Points &points) {
       for(unsigned i = 0; i < simplex.size(); i++)  {
         for(unsigned j = 0; j < i; j++)  {
-          double next_dist = (points[simplex[i]] - points[simplex[j]]).l2Norm();
+          double next_dist = (points[loc_map[simplex[i]]] - points[loc_map[simplex[j]]]).l2Norm();
           cached_distance = next_dist > cached_distance ? next_dist : cached_distance;
         }
       }
     }
 
+    void compute_uid() {
+      char unique_id[10*(simplex.size()+1)];
+      sprintf(unique_id, "%u", simplex[0]);
+      for(unsigned i = 1; i < simplex.size(); i++) {
+        sprintf(unique_id, "%s-%u", unique_id, simplex[i]);
+      }
+      uid = std::string(unique_id);
+    }
+
+    // <PointID, PositionID>, after subdivision, some inserted points should be
+    // treated as the same PointID, but they have different positions.
+    std::map<int, int> loc_map;
 
 		std::vector<int> simplex;
 		MetricSpace* metric_space;
