@@ -8,6 +8,7 @@ SimplicialComplex::SimplicialComplex() {
 SimplicialComplex::SimplicialComplex
 (std::vector<Simplex> &faces, bool from_faces, double** distances) {
     if(from_faces) {
+        // FIXME the ordered is WRONG after building complex from faces
         //std::set<Simplex, global_compare> face_set(faces.begin(), faces.end());
         std::set<Simplex, lex_compare> face_set;
 

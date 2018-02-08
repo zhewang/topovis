@@ -102,7 +102,7 @@ BMatrix PersistentHomology::compute_matrix(
 
 		// if 0-simplex, then reserve face as dummy simplex
 		if(simplex.dim()==0)  {
-			cols[idx].faces.push_back(BMCell(0, 0));
+			//cols[idx].faces.push_back(BMCell(0, 0));
 			continue;
 		}
 
@@ -340,8 +340,9 @@ PersistenceDiagram PersistentHomology::read_persistence_diagram
                 Simplex birth_simplex = sc.allSimplicis[lo.first-1];
                 Simplex death_simplex = sc.allSimplicis[cu.first-1];
 
-                if(death_simplex.get_simplex_distance() <= birth_simplex.get_simplex_distance())
+                if(death_simplex.get_simplex_distance() == birth_simplex.get_simplex_distance()) {
                     continue;
+                }
 
                 PersistentPair persistent_pair(
                     birth_simplex.dim(),

@@ -10,19 +10,15 @@ Simplex::Simplex(const std::vector<int> & _simplex, MetricSpace* _metricSpace)  
 	simplex = _simplex;
 	std::sort(simplex.begin(), simplex.end());
 
-  for(auto e : _simplex) this->loc_map[e] = e;
-
 	metric_space = _metricSpace;
-  cached_distance = -1;
-  //compute_simplex_distance();
+  //cached_distance = -1;
+  compute_simplex_distance();
   compute_uid();
 }
 
-Simplex::Simplex(const std::vector<int> & _simplex, Points &points, std::map<int,int> _loc_map)  {
+Simplex::Simplex(const std::vector<int> & _simplex, Points &points)  {
 	simplex = _simplex;
 	std::sort(simplex.begin(), simplex.end());
-
-  this->loc_map = _loc_map;
 
 	metric_space = NULL;
   cached_distance = -1;
@@ -30,11 +26,9 @@ Simplex::Simplex(const std::vector<int> & _simplex, Points &points, std::map<int
   compute_uid();
 }
 
-Simplex::Simplex(const std::vector<int> & _simplex, double _distance, std::map<int,int> _loc_map)  {
+Simplex::Simplex(const std::vector<int> & _simplex, double _distance)  {
   simplex = _simplex;
   std::sort(simplex.begin(), simplex.end());
-
-  this->loc_map = _loc_map;
 
   metric_space = NULL;
   cached_distance = _distance;
@@ -54,22 +48,17 @@ std::vector<Simplex> Simplex::faces(double** distances)  {
 			new_face.push_back(next_vertex);
 		}
 
-    std::map<int,int> new_loc_map;
-    for(auto e : new_face) new_loc_map[e] = this->loc_map[e];
-
     if(distances == NULL) {
       all_faces.push_back(Simplex(new_face, metric_space));
     } else {
       double new_distance = 0;
       for(unsigned i = 0; i < new_face.size(); i++)  {
         for(unsigned j = 0; j < i; j++)  {
-          int loc_i = this->loc_map[new_face[i]];
-          int loc_j = this->loc_map[new_face[j]];
-          double next_dist = distances[loc_i][loc_j];
+          double next_dist = distances[new_face[i]][new_face[j]];
           new_distance = next_dist > new_distance ? next_dist : new_distance;
         }
       }
-      all_faces.push_back(Simplex(new_face, new_distance, new_loc_map));
+      all_faces.push_back(Simplex(new_face, new_distance));
     }
 	}
 	return all_faces;
