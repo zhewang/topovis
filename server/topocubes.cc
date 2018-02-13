@@ -117,10 +117,20 @@ json TopoCubes::queryCategories(json query) {
   if(q.size() == 0) {
     return "";
   }
+
+  BMatrix reduction = PersistentHomology::compute_matrix(
+      this->global_complex,
+      this->cubes,
+      this->vertex_map,
+      q
+  );
+
+  /**
   // build a cover
   Cover c(this->global_complex, q, this->cubes); // Cover read simplex ids from saved bm and calculate the intersection
   // fetch bm from cubes (need to assign subcomplex ID) and calculate bm for intersection
   BMatrix reduction = PersistentHomology::compute_matrix(c, this->cubes);
+  **/
 
   //std::cout << "reading PD..." << std::endl;
   // read pd

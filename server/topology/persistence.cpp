@@ -219,6 +219,82 @@ BMatrix PersistentHomology::compute_matrix( Cover &cover, std::map<int, BMatrix>
     return bm;
 }
 
+BMatrix PersistentHomology::compute_matrix(
+    const SimplicialComplex &sc,
+    std::map<int, BMatrix> &topocubes,
+    std::map<int,int> &vertex_map, std::vector<int> q)
+{
+    std::vector<BMatrix> rm_vec; // reduced matrices vector
+    for(auto e : q) {
+      rm_vec.push_back(topocubes[e]);
+    }
+
+    // build a map to determine if vetex is queried
+    std::map<int, bool> qmap;
+    for(auto i : q) qmap[i] = true;
+
+    // scan over complex to find connecting simplicis
+    // TODO pre-calculate boundary matrix
+    // TODO better sorting (since boundary matrix is sorted)
+    std::vector<BMCol> cols;
+
+    auto simplex_mapping = sc.get_simplex_map(); // TODO optimize this
+    for(auto s : sc.allSimplicis) {
+
+      // XXX if s is a connecting simplicis
+      if(s.dim() == 0) continue;
+      if(s.dim() == 1) {
+        int att0 = vertex_map[s.vertex(0)];
+        int att1 = vertex_map[s.vertex(1)];
+        if(qmap.count(att0) == 0 ||  qmap.count(att1) == 0 || att0 == att1) continue;
+      }
+      if(s.dim() == 2) {
+        int att0 = vertex_map[s.vertex(0)];
+        int att1 = vertex_map[s.vertex(1)];
+        int att2 = vertex_map[s.vertex(2)];
+        if(qmap.count(att0) == 0 ||  qmap.count(att1) == 0 || qmap.count(att2) == 0 ||
+            (att0 == att1 && att0 == att2)) continue;
+      }
+
+      BMCol cur_col = BMCol();
+      int complexID = 1;
+      int globalID = simplex_mapping[s.id()];
+
+      cur_col.header = BMCell(globalID, complexID);
+
+      std::vector<Simplex> faces = s.faces();
+      for(int f = 0; f < faces.size(); f++)  {
+        Simplex next_face = faces[f];
+        int face_id = simplex_mapping[next_face.id()];
+        cur_col.faces.push_back(BMCell(face_id, complexID));
+      }
+      // sort list, so we can efficiently add cycles and inspect death cycles
+      std::sort(cur_col.faces.begin(), cur_col.faces.end());
+      cols.push_back(cur_col);
+    }
+
+    BMatrix tmp_bm(cols);
+
+    // reduce the boundary matrix
+    reduce_matrix(tmp_bm);
+    //bm.print();
+    rm_vec.push_back(tmp_bm);
+
+    // do the final reduction
+    BMatrix bm = rm_vec[0];
+    if(rm_vec.size() > 1) {
+        for(int i = 1; i < rm_vec.size(); i ++) {
+            bm.append(rm_vec[i]);
+        }
+    }
+    bm.sort();
+
+    //std::cout << "reducing glued matrix\n";
+    reduce_matrix(bm);
+    //bm.print();
+    return bm;
+}
+
 BMatrix PersistentHomology::compute_matrix( Cover &cover ) {
     std::cout << "calculating reduction matrix for cover\n";
 
