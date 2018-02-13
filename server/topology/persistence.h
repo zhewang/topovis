@@ -28,7 +28,16 @@ class PersistentHomology  {
         static BMatrix compute_matrix( Cover &cover );
         static BMatrix compute_matrix( Cover &cover, std::map<int, BMatrix> &topocubes );
 
-        static BMatrix compute_matrix(const SimplicialComplex &sc, std::map<int, BMatrix> &topocubes, std::map<int,int> &vertex_map, std::vector<int> q);
+        static BMatrix compute_matrix(
+            const SimplicialComplex &sc,
+            std::map<string, int> &simplex_mapping,
+            BMatrix &global_bm,
+            std::map<int, BMatrix> &topocubes,
+            std::map<int,int> &vertex_map,
+            std::vector<int> q
+        );
+
+        static BMatrix compute_bm_no_reduction(const SimplicialComplex &sc);
 
         static PersistenceDiagram read_persistence_diagram(
             BMatrix &reduction,

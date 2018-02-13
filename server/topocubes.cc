@@ -62,18 +62,21 @@ void TopoCubes::BuildCube() {
     //auto vmap = this->get_quadtree_map(this->points);
     auto vmap = this->get_category_map(0);
 
-    Filtration* filtration = new RipsFiltration(points, this->max_d);
-    //Filtration* filtration = new SparseRipsFiltration(points, this->max_d, 1.0/3);
+    //Filtration* filtration = new RipsFiltration(points, this->max_d);
+    Filtration* filtration = new SparseRipsFiltration(points, this->max_d, 1.0/3);
     filtration->build_filtration();
     this->global_complex = filtration->get_complex();
 
-    auto globalIDMap = this->global_complex.get_simplex_map();
-    global_compare::order_map = globalIDMap;
+    this->simplex_map = this->global_complex.get_simplex_map();
+    global_compare::order_map = this->simplex_map;
+
+    // build global boundary matrix
+    this->global_bm = PersistentHomology::compute_bm_no_reduction(this->global_complex);
 
     // TODO build hierarchical cubes: there are assembly of leaf-level cubes
     for( auto it = vmap.begin(); it != vmap.end(); it ++) {
       auto s = this->getSubComplex(it->second);
-      auto bm = PersistentHomology::compute_matrix(s, globalIDMap);
+      auto bm = PersistentHomology::compute_matrix(s, this->simplex_map);
       // save bm to cubes
       this->cubes[it->first] = bm;
     }
@@ -120,6 +123,8 @@ json TopoCubes::queryCategories(json query) {
 
   BMatrix reduction = PersistentHomology::compute_matrix(
       this->global_complex,
+      this->simplex_map,
+      this->global_bm,
       this->cubes,
       this->vertex_map,
       q

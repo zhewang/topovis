@@ -55,6 +55,8 @@ class TopoCubes {
     std::map<int, int> vertex_map; // vertex id -> category id
     std::map<int, BMatrix> cubes;
     SimplicialComplex global_complex;
+    std::map<string,int> simplex_map;
+    BMatrix global_bm;
 };
 
 #endif
