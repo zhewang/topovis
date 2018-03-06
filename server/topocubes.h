@@ -32,6 +32,7 @@ class TopoCubes {
     TopoCubes();
     TopoCubes(std::string csvFilePath, int max_d);
     void BuildCube();
+    void BuildCube2(); // build cube on continuous attribute
 
     // query API
     json getOriginalPointCloud();

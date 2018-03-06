@@ -44,6 +44,7 @@ TopoCubes::TopoCubes(std::string filePath, int _max_d) {
 
       this->vertex_map[points.size()-1] = c;
 
+      //a.push_back(px); // use px as a dimension
       a.push_back(c);
       this->attrs.push_back(a);
     }
@@ -80,6 +81,22 @@ void TopoCubes::BuildCube() {
       // save bm to cubes
       this->cubes[it->first] = bm;
     }
+}
+
+void TopoCubes::BuildCube2() {
+
+    //Filtration* filtration = new RipsFiltration(points, this->max_d);
+    Filtration* filtration = new SparseRipsFiltration(points, this->max_d, 1.0/3);
+    filtration->build_filtration();
+    this->global_complex = filtration->get_complex();
+
+    this->simplex_map = this->global_complex.get_simplex_map();
+    global_compare::order_map = this->simplex_map;
+
+    // build global boundary matrix
+    this->global_bm = PersistentHomology::compute_bm_no_reduction(this->global_complex);
+
+    // TODO build hierarchical cubes
 }
 
 SimplicialComplex TopoCubes::getSubComplex(std::vector<int> &ids) {

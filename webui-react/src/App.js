@@ -190,6 +190,7 @@ class App extends Component {
             }
             return true;
           });
+          console.log(data);
           this.setState({pd: data});
         }.bind(this))
         .catch(function (error) {
