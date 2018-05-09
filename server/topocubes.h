@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <boost/algorithm/string.hpp>
 
 #include "json.hpp"
 
@@ -30,7 +31,7 @@ typedef std::vector<std::vector<double> > ATTRS;
 class TopoCubes {
   public:
     TopoCubes();
-    TopoCubes(std::string csvFilePath, int max_d);
+    TopoCubes(std::string csvFilePath, std::string complexFilePath, int max_d);
     void BuildCube();
     void BuildCube2(); // build cube on continuous attribute
 
@@ -57,6 +58,7 @@ class TopoCubes {
     std::map<int, BMatrix> cubes;
     SimplicialComplex global_complex;
     std::map<string,int> simplex_map;
+    std::map<string, double> simplex_distances;
     BMatrix global_bm;
 };
 

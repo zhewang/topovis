@@ -34,6 +34,7 @@ class Simplex  {
 		}
 
 		std::vector<Simplex> faces(double** distances=NULL);
+		std::vector<Simplex> faces(std::map<std::string, double> &dist_map);
 
 		inline bool operator==(const Simplex& _simp) const {
             return this->simplex == _simp.simplex;

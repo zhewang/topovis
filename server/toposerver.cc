@@ -141,13 +141,13 @@ static void ev_handler(struct mg_connection *c, int ev, void *ev_data) {
 }
 
 int main(int argc, char *argv[]) {
-  if(argc < 2) {
-    std::cout << "Usage: " << argv[0] << " [data_file_path]" << std::endl;
+  if(argc < 3) {
+    std::cout << "Usage: " << argv[0] << " [data_file_path] [pre-calculated_complex_file_path]" << std::endl;
     return 0;
   }
 
   // build the cubes
-  CUBES = TopoCubes(argv[1], 2);
+  CUBES = TopoCubes(argv[1], argv[2], 2);
 
   // start serving
   struct mg_mgr mgr;

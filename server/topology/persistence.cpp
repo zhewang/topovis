@@ -370,7 +370,7 @@ BMatrix PersistentHomology::compute_matrix( Cover &cover ) {
     return bm;
 }
 
-BMatrix PersistentHomology::compute_bm_no_reduction(const SimplicialComplex &sc){
+BMatrix PersistentHomology::compute_bm_no_reduction(const SimplicialComplex &sc, std::map<std::string, double> &dist_map){
   int complexID = 1;
   int filtration_size = sc.allSimplicis.size();
   auto simplex_mapping = sc.get_simplex_map();
@@ -397,7 +397,7 @@ BMatrix PersistentHomology::compute_bm_no_reduction(const SimplicialComplex &sc)
       continue;
     }
 
-    std::vector<Simplex> faces = simplex.faces();
+    std::vector<Simplex> faces = simplex.faces(dist_map);
     for(int f = 0; f < faces.size(); f++)  {
       Simplex next_face = faces[f];
       int face_id = simplex_mapping[next_face.id()];

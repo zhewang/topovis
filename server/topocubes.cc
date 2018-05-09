@@ -1,10 +1,13 @@
 #include "topocubes.h"
 #include "csv.h"
 
+using namespace std;
+using namespace boost;
+
 TopoCubes::TopoCubes() {
 }
 
-TopoCubes::TopoCubes(std::string filePath, int _max_d) {
+TopoCubes::TopoCubes(std::string filePath, std::string complexFile, int _max_d = 2) {
   auto parseSDSS = [filePath, this]() {
     io::CSVReader<6> in(filePath);
     in.read_header(io::ignore_extra_column, "ra", "dec", "z_photoz", "x", "y", "z");
@@ -56,6 +59,26 @@ TopoCubes::TopoCubes(std::string filePath, int _max_d) {
   this->max_d = _max_d;
   this->originalPointsSize = this->points.size();
 
+  // Read Complex
+  std::ifstream infile(complexFile);
+  vector<Simplex> simplices;
+  for (std::string line; getline(infile, line); )
+  {
+    vector<string> strs;
+    vector<int> simplex_vertice;
+    split(strs, line, is_any_of(" "));
+    for (int i=0; i < strs.size()-1; ++i) {
+      simplex_vertice.push_back(atoi(strs[i].c_str()));
+    }
+    double distance = atof(strs.back().c_str());
+    auto s = Simplex(simplex_vertice, distance);
+    simplices.push_back(s);
+    this->simplex_distances[s.id()] = distance;
+  }
+
+  this->global_complex = SimplicialComplex(simplices);
+
+  // Build Cubes
   this->BuildCube();
 }
 
@@ -63,18 +86,13 @@ void TopoCubes::BuildCube() {
     //auto vmap = this->get_quadtree_map(this->points);
     auto vmap = this->get_category_map(0);
 
-    //Filtration* filtration = new RipsFiltration(points, this->max_d);
-    Filtration* filtration = new SparseRipsFiltration(points, this->max_d, 1.0/3);
-    filtration->build_filtration();
-    this->global_complex = filtration->get_complex();
-
     this->simplex_map = this->global_complex.get_simplex_map();
     global_compare::order_map = this->simplex_map;
 
     // build global boundary matrix
-    this->global_bm = PersistentHomology::compute_bm_no_reduction(this->global_complex);
+    this->global_bm = PersistentHomology::compute_bm_no_reduction(this->global_complex, this->simplex_distances);
 
-    // TODO build hierarchical cubes: there are assembly of leaf-level cubes
+    // TODO debug
     for( auto it = vmap.begin(); it != vmap.end(); it ++) {
       auto s = this->getSubComplex(it->second);
       auto bm = PersistentHomology::compute_matrix(s, this->simplex_map);
@@ -94,7 +112,7 @@ void TopoCubes::BuildCube2() {
     global_compare::order_map = this->simplex_map;
 
     // build global boundary matrix
-    this->global_bm = PersistentHomology::compute_bm_no_reduction(this->global_complex);
+    this->global_bm = PersistentHomology::compute_bm_no_reduction(this->global_complex, this->simplex_distances);
 
     // TODO build hierarchical cubes
 }

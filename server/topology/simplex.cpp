@@ -64,4 +64,28 @@ std::vector<Simplex> Simplex::faces(double** distances)  {
 	return all_faces;
 }
 
+std::vector<Simplex> Simplex::faces(std::map<std::string, double> &dist_map)  {
+	std::vector<Simplex> all_faces;
+  auto compute_uid = [](std::vector<int> vertices) {
+      char unique_id[10*(vertices.size()+1)];
+      sprintf(unique_id, "%u", vertices[0]);
+      for(unsigned i = 1; i < vertices.size(); i++) {
+        sprintf(unique_id, "%s-%u", unique_id, vertices[i]);
+      }
+      return std::string(unique_id);
+  };
+
+	for(unsigned i = 0; i < simplex.size(); i++)  {
+		std::vector<int> new_face;
+		for(unsigned j = 0; j < simplex.size()-1; j++)  {
+			int next_vertex = simplex[(j+i)%simplex.size()];
+			new_face.push_back(next_vertex);
+		}
+
+    double new_distance = dist_map[compute_uid(new_face)];
+    all_faces.push_back(Simplex(new_face, new_distance));
+	}
+	return all_faces;
+}
+
 std::map<std::string, int> global_compare::order_map = std::map<std::string, int>();

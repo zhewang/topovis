@@ -37,7 +37,7 @@ class PersistentHomology  {
             std::vector<int> q
         );
 
-        static BMatrix compute_bm_no_reduction(const SimplicialComplex &sc);
+        static BMatrix compute_bm_no_reduction(const SimplicialComplex &sc, std::map<std::string, double> &dist_map);
 
         static PersistenceDiagram read_persistence_diagram(
             BMatrix &reduction,
