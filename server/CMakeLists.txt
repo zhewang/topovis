@@ -1,9 +1,11 @@
 project(persistence)
 
-list( APPEND CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")	# enables C++ 11 features
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_FLAGS -pthread)
 set(CMAKE_BUILD_TYPE Release)
 
-include_directories(${persistence_SOURCE_DIR})
+include_directories(${persistence_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/ann_1.1.2/include)
+link_directories(${CMAKE_SOURCE_DIR}/ann_1.1.2/lib)
 
 subdirs(geometry topology)
 
