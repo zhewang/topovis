@@ -30,6 +30,33 @@ void read_mesh2D(string filePath, Points &points) {
   }
 }
 
+void read_meshSDSS(string filePath, Points &points) {
+  io::CSVReader<6> in(filePath);
+  in.read_header(io::ignore_extra_column, "ra", "dec", "z_photoz", "x", "y", "z");
+  double ra, dec, redshift, x, y, z;
+  while(in.read_row(ra, dec, redshift, x, y ,z)){
+    vector<double> p, a;
+    p.push_back(x);
+    p.push_back(y);
+    p.push_back(z);
+    points.push_back(Vector(p));
+
+    //// TODO calculate c
+    //double c = 1;
+    //if(redshift>= 0.031 && redshift < 0.032) {
+    //c = 2;
+    //} else if(redshift >= 0.032 && redshift < 0.033){
+    //c = 3;
+    //} else {
+    //c = 4;
+    //}
+    //vertex_map[points.size()-1] = c;
+
+    //a.push_back(c);
+    //attrs.push_back(a);
+  }
+}
+
 void process(std::string filePath, int _max_d) {
 
   int max_d;
@@ -42,34 +69,8 @@ void process(std::string filePath, int _max_d) {
   std::map<string,int> simplex_map;
   BMatrix global_bm;
 
-  //auto parseSDSS = [filePath, points, vertex_map, attrs]() {
-    //io::CSVReader<6> in(filePath);
-    //in.read_header(io::ignore_extra_column, "ra", "dec", "z_photoz", "x", "y", "z");
-    //double ra, dec, redshift, x, y, z;
-    //while(in.read_row(ra, dec, redshift, x, y ,z)){
-      //vector<double> p, a;
-      //p.push_back(x);
-      //p.push_back(y);
-      //p.push_back(z);
-      //points.push_back(Vector(p));
-
-      //// TODO calculate c
-      //double c = 1;
-      //if(redshift>= 0.031 && redshift < 0.032) {
-        //c = 2;
-      //} else if(redshift >= 0.032 && redshift < 0.033){
-        //c = 3;
-      //} else {
-        //c = 4;
-      //}
-      //vertex_map[points.size()-1] = c;
-
-      //a.push_back(c);
-      //attrs.push_back(a);
-    //}
-  //};
-
-  read_mesh2D(filePath, points);
+  //read_mesh2D(filePath, points);
+  read_meshSDSS(filePath, points);
 
   max_d = _max_d;
   originalPointsSize = points.size();
